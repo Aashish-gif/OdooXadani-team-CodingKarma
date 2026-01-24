@@ -61,7 +61,7 @@ export function AppLayout({ children }: AppLayoutProps) {
     { name: 'Dashboard', icon: Home, path: '/dashboard' },
     { name: 'Products', icon: Package, path: '/products' },
     { name: 'Bills of Materials', icon: Layers, path: '/bom' },
-    { name: 'Engineering Change Orders', icon: FileEdit, path: '/eco' },
+    { name: 'ECOs', icon: FileEdit, path: '/eco' },
     { name: 'Reports', icon: BarChart3, path: '/reports' },
     { name: 'Settings', icon: Settings, path: '/settings' },
   ];
@@ -85,7 +85,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       breadcrumbs.push('Bills of Materials');
       if (segments[1]) breadcrumbs.push(`BoM ${segments[1]}`);
     } else if (segments[0] === 'eco') {
-      breadcrumbs.push('Engineering Change Orders');
+      breadcrumbs.push('ECOs');
       if (segments[1] === 'create') breadcrumbs.push('Create ECO');
       else if (segments[1]) breadcrumbs.push(`ECO-${segments[1]}`);
     } else if (segments[0] === 'reports') {
@@ -106,7 +106,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       {/* Sidebar */}
       <aside className="w-64 bg-slate-900 text-slate-100 flex flex-col">
         <div className="p-6 border-b border-slate-800">
-          <h1 className="text-xl font-semibold">ECO Manager</h1>
+          <h1 className="text-xl font-semibold">ECOSetu</h1>
           <p className="text-sm text-slate-400 mt-1">Enterprise Edition</p>
         </div>
         <nav className="flex-1 p-4 space-y-1">
@@ -117,11 +117,10 @@ export function AppLayout({ children }: AppLayoutProps) {
               <button
                 key={item.name}
                 onClick={() => router.push(item.path)}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
-                  isActive
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${isActive
                     ? 'bg-slate-800 text-white'
                     : 'text-slate-300 hover:bg-slate-800/50 hover:text-white'
-                }`}
+                  }`}
               >
                 <item.icon className="w-5 h-5" />
                 <span>{item.name}</span>
@@ -129,19 +128,6 @@ export function AppLayout({ children }: AppLayoutProps) {
             );
           })}
         </nav>
-        <div className="p-4 border-t border-slate-800">
-          <div className="text-xs text-slate-400 mb-2">Current Role</div>
-          <select
-            value={currentRole}
-            onChange={(e) => setRole(e.target.value as any)}
-            className="w-full bg-slate-800 text-slate-100 px-3 py-2 rounded-lg text-sm border border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="Engineer">Engineer</option>
-            <option value="Approver">Approver</option>
-            <option value="Operations">Operations</option>
-            <option value="Admin">Admin</option>
-          </select>
-        </div>
       </aside>
 
       {/* Main Content */}
@@ -197,9 +183,22 @@ export function AppLayout({ children }: AppLayoutProps) {
                         notifications.map((notification) => (
                           <div
                             key={notification.id}
-                            className={`px-4 py-3 border-b border-slate-100 hover:bg-slate-50 transition-colors ${
-                              notification.isUnread ? 'bg-blue-50/50' : ''
-                            }`}
+                            onClick={() => {
+                              if (notification.type.includes('ECO')) {
+                                router.push('/eco');
+                              } else if (notification.type.includes('Product')) {
+                                router.push('/products');
+                              }
+                              // Mark as read when clicked
+                              if (notification.isUnread) {
+                                setNotifications(notifications.map(n =>
+                                  n.id === notification.id ? { ...n, isUnread: false } : n
+                                ));
+                              }
+                              setShowNotifications(false);
+                            }}
+                            className={`px-4 py-3 border-b border-slate-100 hover:bg-slate-50 transition-colors cursor-pointer ${notification.isUnread ? 'bg-blue-50/50' : ''
+                              }`}
                           >
                             <div className="flex items-start justify-between gap-2">
                               <div className="flex-1">

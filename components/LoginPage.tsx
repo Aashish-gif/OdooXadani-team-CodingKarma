@@ -50,7 +50,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
               <Building2 className="w-7 h-7" />
             </div>
             <div>
-              <h1 className="text-3xl font-semibold">ECO Manager</h1>
+              <h1 className="text-3xl font-semibold">ECOSetu</h1>
               <p className="text-slate-400">Enterprise Edition</p>
             </div>
           </div>
@@ -167,7 +167,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
 
             <div className="mt-6 text-center">
               <p className="text-xs text-slate-400">
-                © 2024 ECO Manager. All rights reserved.
+                © 2024 ECOSetu. All rights reserved.
               </p>
             </div>
           </div>
