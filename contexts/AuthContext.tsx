@@ -7,6 +7,10 @@ type Role = 'Engineer' | 'Approver' | 'Operations' | 'Admin';
 interface User {
   name: string;
   email: string;
+  role?: Role;
+  location?: string;
+  phone?: string;
+  description?: string;
 }
 
 interface AuthContextType {
@@ -16,6 +20,7 @@ interface AuthContextType {
   login: (role: Role, userData: User) => void;
   logout: () => void;
   setRole: (role: Role) => void;
+  updateUser: (userData: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -25,7 +30,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [currentRole, setCurrentRole] = useState<Role>('Engineer');
   const [currentUser, setCurrentUser] = useState<User>({ 
     name: 'John Smith', 
-    email: 'john.smith@example.com' 
+    email: 'john.smith@example.com',
+    location: 'San Francisco, CA',
+    phone: '+1 (555) 123-4567',
+    description: 'Senior Manufacturing Engineer with 10 years of experience in automotive and aerospace industries.',
+    role: 'Engineer'
   });
 
   const login = (role: Role, userData: User) => {
@@ -43,6 +52,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setCurrentRole(role);
   };
 
+  const updateUser = (userData: Partial<User>) => {
+    setCurrentUser(prev => ({ ...prev, ...userData }));
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -52,6 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         logout,
         setRole,
+        updateUser,
       }}
     >
       {children}

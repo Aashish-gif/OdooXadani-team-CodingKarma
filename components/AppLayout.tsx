@@ -117,11 +117,10 @@ export function AppLayout({ children }: AppLayoutProps) {
               <button
                 key={item.name}
                 onClick={() => router.push(item.path)}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
-                  isActive
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${isActive
                     ? 'bg-slate-800 text-white'
                     : 'text-slate-300 hover:bg-slate-800/50 hover:text-white'
-                }`}
+                  }`}
               >
                 <item.icon className="w-5 h-5" />
                 <span>{item.name}</span>
@@ -184,9 +183,22 @@ export function AppLayout({ children }: AppLayoutProps) {
                         notifications.map((notification) => (
                           <div
                             key={notification.id}
-                            className={`px-4 py-3 border-b border-slate-100 hover:bg-slate-50 transition-colors ${
-                              notification.isUnread ? 'bg-blue-50/50' : ''
-                            }`}
+                            onClick={() => {
+                              if (notification.type.includes('ECO')) {
+                                router.push('/eco');
+                              } else if (notification.type.includes('Product')) {
+                                router.push('/products');
+                              }
+                              // Mark as read when clicked
+                              if (notification.isUnread) {
+                                setNotifications(notifications.map(n =>
+                                  n.id === notification.id ? { ...n, isUnread: false } : n
+                                ));
+                              }
+                              setShowNotifications(false);
+                            }}
+                            className={`px-4 py-3 border-b border-slate-100 hover:bg-slate-50 transition-colors cursor-pointer ${notification.isUnread ? 'bg-blue-50/50' : ''
+                              }`}
                           >
                             <div className="flex items-start justify-between gap-2">
                               <div className="flex-1">

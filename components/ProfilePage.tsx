@@ -1,9 +1,11 @@
-import { Mail, Phone, MapPin, Calendar, Shield, LogOut, Edit } from 'lucide-react';
+import { Mail, Phone, MapPin, Calendar, Shield, LogOut, Edit, X } from 'lucide-react';
+import { useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 
 type Role = 'Engineer' | 'Approver' | 'Operations' | 'Admin';
 
 interface ProfilePageProps {
-  user: { name: string; email: string };
+  user?: { name: string; email: string }; // Optional to allow override, but usually from context
   role: Role;
   onLogout: () => void;
 }
@@ -24,7 +26,20 @@ const activityLog = [
   { date: '2024-01-21', time: '03:20 PM', action: 'Generated ECO Report', type: 'Report' },
 ];
 
-export function ProfilePage({ user, role, onLogout }: ProfilePageProps) {
+export function ProfilePage({ user: propUser, role, onLogout }: ProfilePageProps) {
+  const { currentUser, updateUser } = useAuth();
+  // Use propUser if provided (legacy support), otherwise use currentUser from context
+  const user = propUser || currentUser;
+
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    name: user.name,
+    email: user.email,
+    location: currentUser.location || 'San Francisco, CA',
+    phone: currentUser.phone || '+1 (555) 123-4567',
+    description: currentUser.description || 'Senior Manufacturing Engineer with 10 years of experience in automotive and aerospace industries.'
+  });
+
   const getRoleBadgeColor = () => {
     switch (role) {
       case 'Admin':
@@ -55,6 +70,12 @@ export function ProfilePage({ user, role, onLogout }: ProfilePageProps) {
     }
   };
 
+  const handleSaveProfile = (e: React.FormEvent) => {
+    e.preventDefault();
+    updateUser(editFormData);
+    setShowEditModal(false);
+  };
+
   return (
     <div className="space-y-6">
       {/* Profile Header */}
@@ -82,7 +103,19 @@ export function ProfilePage({ user, role, onLogout }: ProfilePageProps) {
               </div>
             </div>
             <div className="flex items-center gap-3 mb-2">
-              <button className="inline-flex items-center gap-2 px-4 py-2 border border-slate-300 text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
+              <button
+                onClick={() => {
+                  setEditFormData({
+                    name: user.name,
+                    email: user.email,
+                    location: currentUser.location || 'San Francisco, CA',
+                    phone: currentUser.phone || '+1 (555) 123-4567',
+                    description: currentUser.description || 'Senior Manufacturing Engineer with 10 years of experience in automotive and aerospace industries.'
+                  });
+                  setShowEditModal(true);
+                }}
+                className="inline-flex items-center gap-2 px-4 py-2 border border-slate-300 text-slate-700 hover:bg-slate-50 rounded-lg transition-colors"
+              >
                 <Edit className="w-4 h-4" />
                 Edit Profile
               </button>
@@ -108,14 +141,14 @@ export function ProfilePage({ user, role, onLogout }: ProfilePageProps) {
               <Phone className="w-5 h-5 text-slate-600" />
               <div>
                 <div className="text-xs text-slate-600">Phone</div>
-                <div className="text-sm font-medium text-slate-900">+1 (555) 123-4567</div>
+                <div className="text-sm font-medium text-slate-900">{currentUser.phone || '+1 (555) 123-4567'}</div>
               </div>
             </div>
             <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-lg">
               <MapPin className="w-5 h-5 text-slate-600" />
               <div>
                 <div className="text-xs text-slate-600">Location</div>
-                <div className="text-sm font-medium text-slate-900">San Francisco, CA</div>
+                <div className="text-sm font-medium text-slate-900">{currentUser.location || 'San Francisco, CA'}</div>
               </div>
             </div>
           </div>
@@ -138,6 +171,12 @@ export function ProfilePage({ user, role, onLogout }: ProfilePageProps) {
               <div>
                 <div className="text-sm font-medium text-slate-900 mb-2">Description</div>
                 <p className="text-sm text-slate-600">{roleDescriptions[role]}</p>
+              </div>
+              <div>
+                <div className="text-sm font-medium text-slate-900 mb-2">About user</div>
+                <p className="text-sm text-slate-600">
+                  {currentUser.description || 'Senior Manufacturing Engineer with 10 years of experience in automotive and aerospace industries.'}
+                </p>
               </div>
               <div className="pt-4 border-t border-slate-200">
                 <div className="text-sm font-medium text-slate-900 mb-2">Member Since</div>
@@ -226,6 +265,77 @@ export function ProfilePage({ user, role, onLogout }: ProfilePageProps) {
           </button>
         </div>
       </div>
+
+      {/* Edit Profile Modal */}
+      {showEditModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full">
+            <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-slate-900">Edit Profile</h3>
+              <button
+                onClick={() => setShowEditModal(false)}
+                className="p-1 hover:bg-slate-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-slate-600" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveProfile} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-900 mb-2">
+                  Location
+                </label>
+                <input
+                  type="text"
+                  value={editFormData.location}
+                  onChange={(e) => setEditFormData({ ...editFormData, location: e.target.value })}
+                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-900 mb-2">
+                  Mobile No.
+                </label>
+                <input
+                  type="text"
+                  value={editFormData.phone}
+                  onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value })}
+                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-900 mb-2">
+                  Description
+                </label>
+                <textarea
+                  value={editFormData.description}
+                  onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
+                  rows={4}
+                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200">
+                <button
+                  type="button"
+                  onClick={() => setShowEditModal(false)}
+                  className="px-4 py-2 text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
