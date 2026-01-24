@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Settings, Users, Bell, Lock, Database, Plus, X } from 'lucide-react';
+import { Settings, Users, Bell, Lock, Database, Plus, X, Globe } from 'lucide-react';
+import { useCurrency } from '../contexts/CurrencyContext';
 
 type Role = 'Engineer' | 'Approver' | 'Operations' | 'Admin';
 
@@ -9,6 +10,7 @@ interface SettingsPageProps {
 
 export function SettingsPage({ role }: SettingsPageProps) {
   const isAdmin = role === 'Admin';
+  const { selectedCurrency, setSelectedCurrency, isLoadingRates, lastUpdated } = useCurrency();
   const [users, setUsers] = useState<any[]>([]);
   const [roles, setRoles] = useState<any[]>([]);
   const [settings, setSettings] = useState<any>(null);
@@ -107,18 +109,30 @@ export function SettingsPage({ role }: SettingsPageProps) {
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-900 mb-2">
-              Default Currency
+              Preferred Currency
             </label>
-            <select
-              defaultValue={settings?.currency || "USD"}
-              disabled={!isAdmin}
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-slate-50 disabled:text-slate-500"
-            >
-              <option value="USD">USD - US Dollar</option>
-              <option value="EUR">EUR - Euro</option>
-              <option value="GBP">GBP - British Pound</option>
-              <option value="JPY">JPY - Japanese Yen</option>
-            </select>
+            <div className="flex items-center gap-3">
+              <select
+                value={selectedCurrency}
+                onChange={(e) => setSelectedCurrency(e.target.value as any)}
+                className="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="USD">USD - US Dollar</option>
+                <option value="INR">INR - Indian Rupee</option>
+                <option value="EUR">EUR - Euro</option>
+                <option value="GBP">GBP - British Pound</option>
+                <option value="JPY">JPY - Japanese Yen</option>
+              </select>
+              <Globe className="w-5 h-5 text-slate-500" />
+            </div>
+            {isLoadingRates && (
+              <p className="text-xs text-slate-500 mt-1">Loading exchange rates...</p>
+            )}
+            {lastUpdated && !isLoadingRates && (
+              <p className="text-xs text-slate-500 mt-1">
+                Rates updated: {lastUpdated.toLocaleTimeString()}
+              </p>
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-900 mb-2">

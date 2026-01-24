@@ -1,5 +1,6 @@
 import { ArrowLeft, FileText, History, Paperclip } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useCurrency } from '../contexts/CurrencyContext';
 
 type Page = any;
 type Role = 'Engineer' | 'Approver' | 'Operations' | 'Admin';
@@ -11,6 +12,7 @@ interface ProductDetailProps {
 }
 
 export function ProductDetail({ productId, onNavigate, role }: ProductDetailProps) {
+  const { formatPrice } = useCurrency();
   const [activeTab, setActiveTab] = useState<'overview' | 'versions' | 'attachments'>('overview');
   const [product, setProduct] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -155,11 +157,11 @@ export function ProductDetail({ productId, onNavigate, role }: ProductDetailProp
                   <div className="space-y-6">
                     <div>
                       <label className="text-sm text-slate-600 mb-1 block">Sale Price</label>
-                      <p className="text-2xl font-semibold text-slate-900">${product.salePrice}</p>
+                      <p className="text-2xl font-semibold text-slate-900">{formatPrice(Number(product.salePrice))}</p>
                     </div>
                     <div>
                       <label className="text-sm text-slate-600 mb-1 block">Cost Price</label>
-                      <p className="text-2xl font-semibold text-slate-900">${product.costPrice}</p>
+                      <p className="text-2xl font-semibold text-slate-900">{formatPrice(Number(product.costPrice))}</p>
                     </div>
                     <div>
                       <label className="text-sm text-slate-600 mb-1 block">Weight</label>

@@ -52,15 +52,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     try {
       const saved = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null;
+      console.log('Checking saved auth state:', saved);
+      
       if (saved) {
         const parsed = JSON.parse(saved) as Partial<AuthContextType> & { currentUser?: User; currentRole?: Role };
+        console.log('Parsed auth state:', parsed);
+        
         if (parsed.isAuthenticated && parsed.currentUser) {
+          console.log('Restoring authenticated user:', parsed.currentUser);
           setIsAuthenticated(true);
           setCurrentUser(parsed.currentUser);
           setCurrentRole(parsed.currentRole || parsed.currentUser.role || 'Engineer');
           
           // Refresh user data from backend if we have a user ID
           if (parsed.currentUser.id) {
+            console.log('Refreshing user data after restore');
             refreshUserData(parsed.currentUser.id);
           }
         }
@@ -85,6 +91,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const login = async (userData: User) => {
+    console.log('Login called with userData:', userData);
+    
     const nextRole = userData.role || 'Engineer';
     const nextUser = { 
       ...defaultUser, 
@@ -93,20 +101,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       role: nextRole 
     };
 
+    console.log('Next user data:', nextUser);
+
     setIsAuthenticated(true);
     setCurrentRole(nextRole);
     setCurrentUser(nextUser);
     
     // Fetch fresh user data from backend if we have a user ID
     if (nextUser.id) {
+      console.log('Fetching fresh user data for ID:', nextUser.id);
       try {
         const response = await fetch(`/api/profile?id=${nextUser.id}`);
+        console.log('Profile fetch response status:', response.status);
+        
         if (response.ok) {
           const freshUserData = await response.json();
+          console.log('Fresh user data received:', freshUserData);
+          
           const updatedUser = { ...nextUser, ...freshUserData };
           setCurrentUser(updatedUser);
           persistState({ isAuthenticated: true, user: updatedUser, role: nextRole });
         } else {
+          console.log('Profile fetch failed, using original data');
           // If fetch fails, persist the original data
           persistState({ isAuthenticated: true, user: nextUser, role: nextRole });
         }
@@ -116,6 +132,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         persistState({ isAuthenticated: true, user: nextUser, role: nextRole });
       }
     } else {
+      console.log('No user ID available, using original data');
       // No ID available, persist the original data
       persistState({ isAuthenticated: true, user: nextUser, role: nextRole });
     }
@@ -123,14 +140,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   
   const refreshUserData = async (userId: string) => {
     try {
+      console.log('Refreshing user data for ID:', userId);
       const response = await fetch(`/api/profile?id=${userId}`);
+      console.log('Refresh response status:', response.status);
+      
       if (response.ok) {
         const freshUserData = await response.json();
+        console.log('Refreshed user data:', freshUserData);
+        
         setCurrentUser(prev => {
           const updated = { ...prev, ...freshUserData };
           persistState({ isAuthenticated: true, user: updated, role: currentRole });
           return updated;
         });
+      } else {
+        console.log('Failed to refresh user data');
       }
     } catch (error) {
       console.error('Error refreshing user data:', error);
@@ -159,9 +183,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const updateUser = async (userData: Partial<User>) => {
     try {
+      console.log('Updating user data:', userData);
+      console.log('Current user ID:', currentUser.id);
+      console.log('Is authenticated:', isAuthenticated);
+      
       // Update the backend first to ensure data is saved
       if (isAuthenticated && currentUser.id) {
         const updatedData = { ...userData, id: currentUser.id };
+        console.log('Sending update request with data:', updatedData);
+        
         const response = await fetch('/api/profile', {
           method: 'PUT',
           headers: {
@@ -170,17 +200,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           body: JSON.stringify(updatedData),
         });
         
+        console.log('Backend response status:', response.status);
+        
         if (!response.ok) {
           const errorText = await response.text();
           console.error('Failed to update user on backend:', errorText);
           throw new Error(`Backend update failed: ${errorText}`);
         }
         
+        const responseData = await response.json();
+        console.log('Backend update successful:', responseData);
+        
         // If backend update succeeds, update local state
         const updatedCurrentUser = { ...currentUser, ...userData };
         setCurrentUser(updatedCurrentUser);
         persistState({ isAuthenticated, user: updatedCurrentUser, role: updatedCurrentUser.role || currentRole });
       } else {
+        console.log('No user ID or not authenticated, updating local state only');
         // Fallback: update local state only if no user ID
         const updatedCurrentUser = { ...currentUser, ...userData };
         setCurrentUser(updatedCurrentUser);
