@@ -14,15 +14,22 @@ export function BoMDetail({ bomId, onNavigate, role }: BoMDetailProps) {
   const [activeView, setActiveView] = useState<'components' | 'operations'>('components');
   const [bom, setBom] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchBoM = async () => {
       try {
         const response = await fetch(`/api/bom/${bomId}`);
+        if (!response.ok) {
+          setError('Failed to load BoM');
+          setBom(null);
+          return;
+        }
         const data = await response.json();
         setBom(data);
       } catch (error) {
         console.error('Failed to fetch BoM:', error);
+        setError('Failed to load BoM');
       } finally {
         setIsLoading(false);
       }
@@ -31,6 +38,25 @@ export function BoMDetail({ bomId, onNavigate, role }: BoMDetailProps) {
   }, [bomId]);
 
   const canCreateECO = role === 'Engineer' || role === 'Admin';
+
+  if (isLoading) {
+    return <div className="text-center py-12 text-slate-500">Loading BoM details...</div>;
+  }
+
+  if (error || !bom) {
+    return (
+      <div className="space-y-4">
+        <button
+          onClick={() => onNavigate({ name: 'bom-list' })}
+          className="inline-flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to BoMs
+        </button>
+        <div className="text-center py-12 text-red-500">{error || 'BoM not found'}</div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

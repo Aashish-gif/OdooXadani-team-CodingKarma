@@ -52,29 +52,6 @@ const recentECOs = [
 ];
 
 // Analytics Data
-const ecoTrendData = [
-  { month: 'Aug', created: 12, approved: 10, rejected: 1 },
-  { month: 'Sep', created: 15, approved: 13, rejected: 2 },
-  { month: 'Oct', created: 18, approved: 14, rejected: 2 },
-  { month: 'Nov', created: 14, approved: 16, rejected: 1 },
-  { month: 'Dec', created: 20, approved: 18, rejected: 2 },
-  { month: 'Jan', created: 23, approved: 19, rejected: 3 },
-];
-
-const ecoStatusData = [
-  { name: 'Completed', value: 45, color: '#10b981' },
-  { name: 'In Approval', value: 18, color: '#f59e0b' },
-  { name: 'Draft', value: 12, color: '#64748b' },
-  { name: 'Rejected', value: 8, color: '#ef4444' },
-];
-
-const productCategoryData = [
-  { category: 'Furniture', count: 28 },
-  { category: 'Electronics', count: 42 },
-  { category: 'Industrial', count: 35 },
-  { category: 'Automotive', count: 22 },
-];
-
 import { useState, useEffect } from 'react';
 
 export function Dashboard({ onNavigate, role }: DashboardProps) {
@@ -173,7 +150,7 @@ export function Dashboard({ onNavigate, role }: DashboardProps) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <button
             onClick={() => onNavigate({ name: 'products' })}
-            className="flex items-center gap-4 p-5 bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl hover:shadow-md transition-all group"
+            className="flex items-center gap-4 p-5 bg-linear-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl hover:shadow-md transition-all group"
           >
             <div className="w-12 h-12 rounded-lg bg-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
               <Package className="w-6 h-6 text-white" />
@@ -187,7 +164,7 @@ export function Dashboard({ onNavigate, role }: DashboardProps) {
 
           <button
             onClick={() => onNavigate({ name: 'bom-list' })}
-            className="flex items-center gap-4 p-5 bg-gradient-to-br from-emerald-50 to-emerald-100 border border-emerald-200 rounded-xl hover:shadow-md transition-all group"
+            className="flex items-center gap-4 p-5 bg-linear-to-br from-emerald-50 to-emerald-100 border border-emerald-200 rounded-xl hover:shadow-md transition-all group"
           >
             <div className="w-12 h-12 rounded-lg bg-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform">
               <Layers className="w-6 h-6 text-white" />
@@ -201,7 +178,7 @@ export function Dashboard({ onNavigate, role }: DashboardProps) {
 
           <button
             onClick={() => onNavigate({ name: 'eco-create' })}
-            className="flex items-center gap-4 p-5 bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-xl hover:shadow-md transition-all group"
+            className="flex items-center gap-4 p-5 bg-linear-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-xl hover:shadow-md transition-all group"
           >
             <div className="w-12 h-12 rounded-lg bg-purple-600 flex items-center justify-center group-hover:scale-110 transition-transform">
               <FileEdit className="w-6 h-6 text-white" />
@@ -251,7 +228,7 @@ export function Dashboard({ onNavigate, role }: DashboardProps) {
             <p className="text-sm text-slate-600 mt-1">Created vs. Approved ECOs over time</p>
           </div>
           <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={ecoTrendData}>
+            <LineChart data={chartData?.ecoTrendData || []}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
               <XAxis dataKey="month" stroke="#64748b" style={{ fontSize: '12px' }} />
               <YAxis stroke="#64748b" style={{ fontSize: '12px' }} />
