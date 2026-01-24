@@ -50,6 +50,7 @@ export async function PUT(
                 location: body.location,
                 phone: body.phone,
                 description: body.description,
+                profilePicture: body.profilePicture,
                 status: body.status
             },
         });

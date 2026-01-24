@@ -12,6 +12,7 @@ export async function GET(request: NextRequest) {
                 status: true,
                 location: true,
                 phone: true,
+                profilePicture: true,
                 // Exclude password
             },
             orderBy: { name: 'asc' },
@@ -59,6 +60,7 @@ export async function POST(request: NextRequest) {
                 location: body.location,
                 phone: body.phone,
                 description: body.description,
+                profilePicture: body.profilePicture,
             },
         });
 

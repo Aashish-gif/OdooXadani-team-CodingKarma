@@ -8,25 +8,24 @@ datasource db {
 }
 
 model Product {
-  id              String           @id @default(cuid())
-  productId       String           @unique
-  name            String
-  category        String
-  currentVersion  String           @default("v1.0")
-  salePrice       Decimal
-  costPrice       Decimal
-  status          String           @default("Active")
-  description     String?
-  sku             String           @unique
-  manufacturer    String?
-  weight          String?
-  dimensions      String?
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-
-  versions        ProductVersion[]
-  boms            BoM[]
-  ecos            ECO[]
+  id             String           @id @default(cuid())
+  productId      String           @unique
+  name           String
+  category       String
+  currentVersion String           @default("v1.0")
+  salePrice      Decimal
+  costPrice      Decimal
+  status         String           @default("Active")
+  description    String?
+  sku            String           @unique
+  manufacturer   String?
+  weight         String?
+  dimensions     String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  boms           BoM[]
+  ecos           ECO[]
+  versions       ProductVersion[]
 }
 
 model ProductVersion {
@@ -34,36 +33,32 @@ model ProductVersion {
   version   String
   date      DateTime @default(now())
   changes   String
-
   productId String
   product   Product  @relation(fields: [productId], references: [id])
 }
 
 model BoM {
-  id              String           @id @default(cuid())
-  bomId           String           @unique
-  version         String           @default("v1.0")
-  status          String           @default("Active")
-  componentsCount Int              @default(0)
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-
+  id              String         @id @default(cuid())
+  bomId           String         @unique
+  version         String         @default("v1.0")
+  status          String         @default("Active")
+  componentsCount Int            @default(0)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
   productId       String
-  product         Product          @relation(fields: [productId], references: [id])
-
+  product         Product        @relation(fields: [productId], references: [id])
   components      BoMComponent[]
   operations      BoMOperation[]
 }
 
 model BoMComponent {
-  id        String @id @default(cuid())
-  name      String
-  quantity  Decimal
-  unit      String
-  supplier  String?
-
-  bomId     String
-  bom       BoM    @relation(fields: [bomId], references: [id])
+  id       String  @id @default(cuid())
+  name     String
+  quantity Decimal
+  unit     String
+  supplier String?
+  bomId    String
+  bom      BoM     @relation(fields: [bomId], references: [id])
 }
 
 model BoMOperation {
@@ -72,14 +67,13 @@ model BoMOperation {
   time       Decimal
   unit       String
   workCenter String
-
   bomId      String
   bom        BoM     @relation(fields: [bomId], references: [id])
 }
 
 model ECO {
-  id            String    @id @default(cuid())
-  ecoId         String    @unique
+  id            String        @id @default(cuid())
+  ecoId         String        @unique
   title         String
   type          String
   stage         String
@@ -87,15 +81,13 @@ model ECO {
   effectiveDate DateTime
   createdBy     String
   description   String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
   productId     String
-  product       Product   @relation(fields: [productId], references: [id])
-
-  changes       ECOChange[]
+  product       Product       @relation(fields: [productId], references: [id])
   approvals     ECOApproval[]
   auditLog      ECOAuditLog[]
+  changes       ECOChange[]
 }
 
 model ECOChange {
@@ -105,7 +97,6 @@ model ECOChange {
   oldValue  String?
   newValue  String?
   highlight String?
-
   ecoId     String
   eco       ECO     @relation(fields: [ecoId], references: [id])
 }
@@ -117,7 +108,6 @@ model ECOApproval {
   status  String
   date    DateTime?
   comment String?
-
   ecoId   String
   eco     ECO       @relation(fields: [ecoId], references: [id])
 }
@@ -127,26 +117,25 @@ model ECOAuditLog {
   date   DateTime @default(now())
   user   String
   action String
-
   ecoId  String
   eco    ECO      @relation(fields: [ecoId], references: [id])
 }
 
 model User {
-  id          String   @id @default(cuid())
-  name        String
-  email       String   @unique
-  password    String
-  role        String
-  status      String   @default("Active")
-  location    String?
-  phone       String?
-  description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  notifications Notification[]
-  activities    UserActivity[]
+  id             String         @id @default(cuid())
+  name           String
+  email          String         @unique
+  password       String
+  role           String
+  status         String         @default("Active")
+  location       String?
+  phone          String?
+  description    String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  profilePicture String?
+  notifications  Notification[]
+  activities     UserActivity[]
 }
 
 model Role {
@@ -157,13 +146,12 @@ model Role {
 }
 
 model UserActivity {
-  id        String   @id @default(cuid())
-  action    String
-  type      String
-  date      DateTime @default(now())
-
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  id     String   @id @default(cuid())
+  action String
+  type   String
+  date   DateTime @default(now())
+  userId String
+  user   User     @relation(fields: [userId], references: [id])
 }
 
 model Notification {
@@ -172,7 +160,6 @@ model Notification {
   message   String
   isUnread  Boolean  @default(true)
   createdAt DateTime @default(now())
-
   userId    String
   user      User     @relation(fields: [userId], references: [id])
 }

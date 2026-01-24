@@ -1,4 +1,4 @@
-import { Mail, Phone, MapPin, Calendar, Shield, LogOut, Edit, X } from 'lucide-react';
+import { Mail, Phone, MapPin, Calendar, Shield, LogOut, Edit, X, Camera } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -32,12 +32,15 @@ export function ProfilePage({ user: propUser, role, onLogout }: ProfilePageProps
   const user = propUser || currentUser;
 
   const [showEditModal, setShowEditModal] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
   const [editFormData, setEditFormData] = useState({
     name: user.name,
     email: user.email,
     location: currentUser.location || 'San Francisco, CA',
     phone: currentUser.phone || '+1 (555) 123-4567',
-    description: currentUser.description || 'Senior Manufacturing Engineer with 10 years of experience in automotive and aerospace industries.'
+    description: currentUser.description || 'Senior Manufacturing Engineer with 10 years of experience in automotive and aerospace industries.',
+    profilePicture: currentUser.profilePicture || ''
   });
 
   const getRoleBadgeColor = () => {
@@ -70,10 +73,75 @@ export function ProfilePage({ user: propUser, role, onLogout }: ProfilePageProps
     }
   };
 
-  const handleSaveProfile = (e: React.FormEvent) => {
+  const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    updateUser(editFormData);
-    setShowEditModal(false);
+    setIsSaving(true);
+    setSaveError('');
+    
+    try {
+      await updateUser(editFormData);
+      setShowEditModal(false);
+    } catch (error) {
+      setSaveError('Failed to save profile changes. Please try again.');
+      console.error('Profile save error:', error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+  
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Check file size (limit to 2MB)
+      if (file.size > 2 * 1024 * 1024) {
+        alert('Image size should be less than 2MB');
+        return;
+      }
+      
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const img = new Image();
+        img.onload = () => {
+          // Create canvas for resizing
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          
+          // Set maximum dimensions
+          const maxWidth = 300;
+          const maxHeight = 300;
+          let { width, height } = img;
+          
+          // Calculate new dimensions maintaining aspect ratio
+          if (width > height) {
+            if (width > maxWidth) {
+              height = (height * maxWidth) / width;
+              width = maxWidth;
+            }
+          } else {
+            if (height > maxHeight) {
+              width = (width * maxHeight) / height;
+              height = maxHeight;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          
+          // Draw resized image
+          ctx?.drawImage(img, 0, 0, width, height);
+          
+          // Convert to data URL with quality reduction
+          const resizedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+          
+          setEditFormData({
+            ...editFormData,
+            profilePicture: resizedDataUrl
+          });
+        };
+        img.src = reader.result as string;
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   return (
@@ -85,9 +153,17 @@ export function ProfilePage({ user: propUser, role, onLogout }: ProfilePageProps
           <div className="flex items-end justify-between -mt-16 mb-6">
             <div className="flex items-end gap-6">
               <div className="w-32 h-32 rounded-full bg-white border-4 border-white shadow-lg flex items-center justify-center">
-                <div className="w-full h-full rounded-full bg-blue-600 text-white flex items-center justify-center text-3xl font-semibold">
-                  {user.name.split(' ').map(n => n[0]).join('')}
-                </div>
+                {currentUser.profilePicture ? (
+                  <img 
+                    src={currentUser.profilePicture} 
+                    alt={user.name}
+                    className="w-full h-full rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full rounded-full bg-blue-600 text-white flex items-center justify-center text-3xl font-semibold">
+                    {user.name.split(' ').map(n => n[0]).join('')}
+                  </div>
+                )}
               </div>
               <div className="mb-2">
                 <h2 className="text-2xl font-semibold text-slate-900">{user.name}</h2>
@@ -110,7 +186,8 @@ export function ProfilePage({ user: propUser, role, onLogout }: ProfilePageProps
                     email: user.email,
                     location: currentUser.location || 'San Francisco, CA',
                     phone: currentUser.phone || '+1 (555) 123-4567',
-                    description: currentUser.description || 'Senior Manufacturing Engineer with 10 years of experience in automotive and aerospace industries.'
+                    description: currentUser.description || 'Senior Manufacturing Engineer with 10 years of experience in automotive and aerospace industries.',
+                    profilePicture: currentUser.profilePicture || ''
                   });
                   setShowEditModal(true);
                 }}
@@ -317,19 +394,51 @@ export function ProfilePage({ user: propUser, role, onLogout }: ProfilePageProps
                 />
               </div>
 
+              <div>
+                <label className="block text-sm font-medium text-slate-900 mb-2">
+                  Profile Picture
+                </label>
+                <div className="flex items-center gap-4">
+                  <input
+                    type="text"
+                    value={editFormData.profilePicture}
+                    onChange={(e) => setEditFormData({ ...editFormData, profilePicture: e.target.value })}
+                    placeholder="Enter URL for profile picture"
+                    className="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <label className="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                    Upload
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleImageUpload}
+                    />
+                  </label>
+                </div>
+              </div>
+
+              {saveError && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-sm text-red-700">{saveError}</p>
+                </div>
+              )}
+              
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200">
                 <button
                   type="button"
                   onClick={() => setShowEditModal(false)}
                   className="px-4 py-2 text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
+                  disabled={isSaving}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={isSaving}
                 >
-                  Save Changes
+                  {isSaving ? 'Saving...' : 'Save Changes'}
                 </button>
               </div>
             </form>
