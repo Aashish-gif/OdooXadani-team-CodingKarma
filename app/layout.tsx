@@ -4,7 +4,7 @@ import { Toaster } from '../components/ui/sonner';
 import { Providers } from '../components/Providers';
 
 export const metadata: Metadata = {
-  title: 'ECO Manager - Enterprise Edition',
+  title: 'ECOSetu - Enterprise Edition',
   description: 'Engineering Change Order Management System for Manufacturing',
 };
 
