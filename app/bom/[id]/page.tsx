@@ -22,6 +22,9 @@ export default function BoMDetailPage() {
       case 'eco-detail':
         router.push(`/eco/${page.id}`);
         break;
+      case 'eco-create':
+        router.push(page.productId ? `/eco/create?productId=${page.productId}` : '/eco/create');
+        break;
       default:
         break;
     }

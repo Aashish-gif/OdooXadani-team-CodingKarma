@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
 import { FileText, Download, Calendar } from 'lucide-react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 export function Reports() {
   const [selectedReport, setSelectedReport] = useState<string>('eco');
-  const [timePeriod, setTimePeriod] = useState<string>('6months');
+  const [timePeriod, setTimePeriod] = useState<string>('all');
   const [reportData, setReportData] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -19,7 +18,7 @@ export function Reports() {
     const fetchReportData = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch(`/api/reports?type=${selectedReport}`);
+        const response = await fetch(`/api/reports?type=${selectedReport}&timePeriod=${timePeriod}`);
         const data = await response.json();
         setReportData(data);
       } catch (error) {
@@ -29,54 +28,7 @@ export function Reports() {
       }
     };
     fetchReportData();
-  }, [selectedReport]);
-
-  // Analytics data - adjust based on time period
-  const getApprovalTimeData = () => {
-    switch (timePeriod) {
-      case '3months':
-        return [
-          { month: 'Nov', avgDays: 4.5 },
-          { month: 'Dec', avgDays: 5.8 },
-          { month: 'Jan', avgDays: 4.2 },
-        ];
-      case '6months':
-        return [
-          { month: 'Aug', avgDays: 5.2 },
-          { month: 'Sep', avgDays: 4.8 },
-          { month: 'Oct', avgDays: 6.1 },
-          { month: 'Nov', avgDays: 4.5 },
-          { month: 'Dec', avgDays: 5.8 },
-          { month: 'Jan', avgDays: 4.2 },
-        ];
-      case '1year':
-        return [
-          { month: 'Feb 23', avgDays: 5.5 },
-          { month: 'Mar 23', avgDays: 6.2 },
-          { month: 'Apr 23', avgDays: 5.0 },
-          { month: 'May 23', avgDays: 4.8 },
-          { month: 'Jun 23', avgDays: 5.3 },
-          { month: 'Jul 23', avgDays: 5.1 },
-          { month: 'Aug 23', avgDays: 5.2 },
-          { month: 'Sep 23', avgDays: 4.8 },
-          { month: 'Oct 23', avgDays: 6.1 },
-          { month: 'Nov 23', avgDays: 4.5 },
-          { month: 'Dec 23', avgDays: 5.8 },
-          { month: 'Jan 24', avgDays: 4.2 },
-        ];
-      default:
-        return [
-          { month: 'Aug', avgDays: 5.2 },
-          { month: 'Sep', avgDays: 4.8 },
-          { month: 'Oct', avgDays: 6.1 },
-          { month: 'Nov', avgDays: 4.5 },
-          { month: 'Dec', avgDays: 5.8 },
-          { month: 'Jan', avgDays: 4.2 },
-        ];
-    }
-  };
-
-  const approvalTimeData = getApprovalTimeData();
+  }, [selectedReport, timePeriod]);
 
   const handleExport = () => {
     alert('Export functionality would download the report as CSV');
@@ -97,51 +49,7 @@ export function Reports() {
 
   return (
     <div className="space-y-6">
-      {/* Analytics Chart */}
-      <div className="bg-white rounded-xl border border-slate-200 p-6">
-        <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <h3 className="text-lg font-semibold text-slate-900">Average ECO Approval Time</h3>
-            <p className="text-sm text-slate-600 mt-1">Time from submission to approval (in days)</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-slate-600" />
-            <select
-              value={timePeriod}
-              onChange={(e) => setTimePeriod(e.target.value)}
-              className="px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="3months">Last 3 Months</option>
-              <option value="6months">Last 6 Months</option>
-              <option value="1year">Last 1 Year</option>
-            </select>
-          </div>
-        </div>
-        <ResponsiveContainer width="100%" height={250}>
-          <AreaChart data={approvalTimeData}>
-            <defs>
-              <linearGradient id="colorTime" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-            <XAxis dataKey="month" stroke="#64748b" style={{ fontSize: '12px' }} />
-            <YAxis stroke="#64748b" style={{ fontSize: '12px' }} label={{ value: 'Days', angle: -90, position: 'insideLeft', style: { fontSize: '12px' } }} />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: '#ffffff',
-                border: '1px solid #e2e8f0',
-                borderRadius: '8px',
-                fontSize: '12px'
-              }}
-            />
-            <Area type="monotone" dataKey="avgDays" stroke="#3b82f6" strokeWidth={2} fillOpacity={1} fill="url(#colorTime)" />
-          </AreaChart>
-        </ResponsiveContainer>
-      </div>
-
-      {/* Report Selector */}
+      {/* Report Selection */}
       <div className="bg-white rounded-xl border border-slate-200 p-6">
         <h3 className="text-lg font-semibold text-slate-900 mb-4">Select Report</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -176,18 +84,36 @@ export function Reports() {
           <h3 className="text-lg font-semibold text-slate-900">
             {reports.find(r => r.id === selectedReport)?.name}
           </h3>
-          <button
-            onClick={handleExport}
-            className="inline-flex items-center gap-2 px-4 py-2 border border-slate-300 text-slate-700 hover:bg-slate-50 rounded-lg transition-colors"
-          >
-            <Download className="w-4 h-4" />
-            Export CSV
-          </button>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-slate-600" />
+              <select
+                value={timePeriod}
+                onChange={(e) => setTimePeriod(e.target.value)}
+                className="px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="1month">Last 1 Month</option>
+                <option value="3months">Last 3 Months</option>
+                <option value="6months">Last 6 Months</option>
+                <option value="all">All Time</option>
+              </select>
+            </div>
+            <button
+              onClick={handleExport}
+              className="inline-flex items-center gap-2 px-4 py-2 border border-slate-300 text-slate-700 hover:bg-slate-50 rounded-lg transition-colors"
+            >
+              <Download className="w-4 h-4" />
+              Export CSV
+            </button>
+          </div>
         </div>
 
         <div className="overflow-x-auto">
           {isLoading ? (
-            <div className="text-center py-12 text-slate-500">Loading report data...</div>
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <span className="ml-3 text-slate-500">Loading...</span>
+            </div>
           ) : reportData.length === 0 ? (
             <div className="text-center py-12 text-slate-500">No data available for this report</div>
           ) : (

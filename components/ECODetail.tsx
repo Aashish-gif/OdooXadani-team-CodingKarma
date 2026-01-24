@@ -15,15 +15,22 @@ export function ECODetail({ ecoId, onNavigate, role }: ECODetailProps) {
   const [approvalComment, setApprovalComment] = useState('');
   const [eco, setEco] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchECO = async () => {
       try {
         const response = await fetch(`/api/eco/${ecoId}`);
+        if (!response.ok) {
+          setError('Failed to load ECO');
+          setEco(null);
+          return;
+        }
         const data = await response.json();
         setEco(data);
       } catch (error) {
         console.error('Failed to fetch ECO:', error);
+        setError('Failed to load ECO');
       } finally {
         setIsLoading(false);
       }
@@ -33,6 +40,25 @@ export function ECODetail({ ecoId, onNavigate, role }: ECODetailProps) {
 
   const canApprove = role === 'Approver' && eco.status === 'Pending Approval';
   const canValidate = role === 'Operations';
+
+  if (isLoading) {
+    return <div className="text-center py-12 text-slate-500">Loading ECO details...</div>;
+  }
+
+  if (error || !eco) {
+    return (
+      <div className="space-y-4">
+        <button
+          onClick={() => onNavigate({ name: 'eco-list' })}
+          className="inline-flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to ECOs
+        </button>
+        <div className="text-center py-12 text-red-500">{error || 'ECO not found'}</div>
+      </div>
+    );
+  }
 
   const getStatusColor = (status: string) => {
     switch (status) {

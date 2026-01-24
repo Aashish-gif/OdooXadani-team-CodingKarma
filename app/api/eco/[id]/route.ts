@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+// Note: Next.js 15+ passes params as a Promise
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    context: { params: Promise<{ id: string }> }
 ) {
     try {
+        const params = await context.params;
         const eco = await prisma.eCO.findUnique({
             where: { ecoId: params.id },
             include: {
@@ -47,11 +49,13 @@ export async function GET(
     }
 }
 
+// Note: Next.js 15+ passes params as a Promise
 export async function PUT(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    context: { params: Promise<{ id: string }> }
 ) {
     try {
+        const params = await context.params;
         const body = await request.json();
         const eco = await prisma.eCO.update({
             where: { ecoId: params.id },
