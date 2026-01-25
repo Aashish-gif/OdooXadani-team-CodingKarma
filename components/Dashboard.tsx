@@ -5,7 +5,7 @@ type Page = any;
 
 interface DashboardProps {
   onNavigate: (page: Page) => void;
-  role?: 'Engineer' | 'MCO Manager' | 'Operations' | 'Admin';
+  role?: 'Engineer' | 'ECO Manager' | 'Operations' | 'Admin';
 }
 
 // Analytics Data

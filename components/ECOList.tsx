@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Plus, Filter, Search } from 'lucide-react';
 
 type Page = any;
-type Role = 'Engineer' | 'MCO Manager' | 'Operations' | 'Admin';
+type Role = 'Engineer' | 'ECO Manager' | 'Operations' | 'Admin';
 
 interface ECOListProps {
   onNavigate: (page: Page) => void;
@@ -38,7 +38,7 @@ export function ECOList({ onNavigate, role }: ECOListProps) {
 
   useEffect(() => {
     fetchECOs();
-  }, [searchQuery, filterStage, filterType, filterStatus]);
+  }, [searchQuery, filterStage, filterStatus]);
 
   const canCreateECO = role === 'Engineer' || role === 'Admin';
 
@@ -109,8 +109,8 @@ export function ECOList({ onNavigate, role }: ECOListProps) {
           className="px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="all">All Types</option>
-          <option value="Product">Product</option>
-          <option value="BoM">BoM</option>
+          <option value="Product">Product Change</option>
+          <option value="BoM">BoM Change</option>
         </select>
         <select
           value={filterStatus}
@@ -136,7 +136,7 @@ export function ECOList({ onNavigate, role }: ECOListProps) {
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-slate-50 border-b border-slate-200">
+            <thead className="border-b border-slate-200">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
                   ECO ID
@@ -179,7 +179,7 @@ export function ECOList({ onNavigate, role }: ECOListProps) {
                   <tr
                     key={eco.id}
                     onClick={() => onNavigate({ name: 'eco-detail', id: eco.id })}
-                    className="hover:bg-slate-50 cursor-pointer transition-colors"
+                    className="hover:bg-slate-50 cursor-pointer"
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="text-sm font-medium text-slate-900">{eco.id}</span>
@@ -187,8 +187,12 @@ export function ECOList({ onNavigate, role }: ECOListProps) {
                     <td className="px-6 py-4">
                       <span className="text-sm text-slate-900">{eco.title}</span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-slate-600">{eco.type}</span>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                        eco.type === 'Product' ? 'bg-indigo-100 text-indigo-700' : 'bg-purple-100 text-purple-700'
+                      }`}>
+                        {eco.type === 'Product' ? 'Product' : 'BoM'}
+                      </span>
                     </td>
                     <td className="px-6 py-4">
                       <span className="text-sm text-slate-600">{eco.product}</span>

@@ -27,7 +27,7 @@ interface Operation {
 export function BoMCreate({ onNavigate, productId }: BoMCreateProps) {
   const [productsList, setProductsList] = useState<any[]>([]);
   const [selectedProduct, setSelectedProduct] = useState(productId || '');
-  const [productVersions, setProductVersions] = useState<any[]>([]);
+  const [currentBomVersion, setCurrentBomVersion] = useState('');
   const [bomVersion, setBomVersion] = useState('');
   const [components, setComponents] = useState<Component[]>([
     { id: '1', name: '', quantity: '', unit: '', supplier: '' },
@@ -50,39 +50,62 @@ export function BoMCreate({ onNavigate, productId }: BoMCreateProps) {
     fetchProducts();
   }, []);
 
-  // Fetch versions when a product is selected
+  const parseVersionNumbers = (v: string): number[] => {
+    const match = v.match(/([0-9]+(?:\.[0-9]+)*)/);
+    if (!match) return [];
+    return match[1].split('.').map((n) => parseInt(n, 10)).filter((n) => !Number.isNaN(n));
+  };
+
+  const compareVersions = (a: string, b: string): number => {
+    const pa = parseVersionNumbers(a);
+    const pb = parseVersionNumbers(b);
+    const len = Math.max(pa.length, pb.length);
+    for (let i = 0; i < len; i++) {
+      const va = pa[i] ?? 0;
+      const vb = pb[i] ?? 0;
+      if (va > vb) return 1;
+      if (va < vb) return -1;
+    }
+    return 0;
+  };
+
+  const incrementVersion = (v: string): string => {
+    const prefix = v.startsWith('v') ? 'v' : '';
+    const nums = parseVersionNumbers(v);
+    if (nums.length === 0) return v || 'v1.0';
+    nums[nums.length - 1] = nums[nums.length - 1] + 1;
+    return `${prefix}${nums.join('.')}`;
+  };
+
   useEffect(() => {
     if (!selectedProduct) {
-      setProductVersions([]);
-      setBomVersion('');
+      setCurrentBomVersion('');
+      setBomVersion(''); 
       return;
     }
 
-    const fetchProductVersions = async () => {
+    const fetchProductDetails = async () => {
       try {
         const response = await fetch(`/api/products/${selectedProduct}`);
         const product = await response.json();
         
-        // Get versions for this product
-        if (product.versions && Array.isArray(product.versions)) {
-          const versions = product.versions.sort((a: any, b: any) => 
-            new Date(b.date).getTime() - new Date(a.date).getTime()
-          );
-          setProductVersions(versions);
-          
-          // Auto-select the latest version
-          if (versions.length > 0) {
-            setBomVersion(versions[0].version);
-          }
+        // Find latest BoM version
+        if (product.boms && Array.isArray(product.boms) && product.boms.length > 0) {
+          const sortedBoms = product.boms.sort((a: any, b: any) => compareVersions(b.version, a.version));
+          const latest = sortedBoms[0].version;
+          setCurrentBomVersion(latest);
+          setBomVersion(incrementVersion(latest));
+        } else {
+          setCurrentBomVersion('None');
+          setBomVersion('v1.0');
         }
       } catch (error) {
-        console.error('Failed to fetch product versions:', error);
-        setProductVersions([]);
-        setBomVersion('');
+        console.error('Failed to fetch product details:', error);
+        setCurrentBomVersion('');
       }
     };
 
-    fetchProductVersions();
+    fetchProductDetails();
   }, [selectedProduct]);
 
   const handleAddComponent = () => {
@@ -126,7 +149,7 @@ export function BoMCreate({ onNavigate, productId }: BoMCreateProps) {
     }
 
     if (!bomVersion) {
-      alert('Please select a product version');
+      alert('Please enter a BoM version');
       return;
     }
 
@@ -209,28 +232,28 @@ export function BoMCreate({ onNavigate, productId }: BoMCreateProps) {
           </div>
 
           {/* Version */}
-          <div>
-            <label className="block text-sm font-medium text-slate-900 mb-2">
-              Product Version <span className="text-red-500">*</span>
-            </label>
-            {productVersions.length > 0 ? (
-              <select
-                value={bomVersion}
-                onChange={(e) => setBomVersion(e.target.value)}
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Select a version...</option>
-                {productVersions.map((version, index) => (
-                  <option key={version.id} value={version.version}>
-                    {version.version} {index === 0 ? '(Latest)' : ''}
-                  </option>
-                ))}
-              </select>
-            ) : (
-              <div className="w-full px-4 py-2 border border-slate-300 rounded-lg bg-slate-50 text-slate-500">
-                Select a product first to see available versions
-              </div>
-            )}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+             <div>
+                <label className="block text-sm font-medium text-slate-900 mb-2">Current BoM Version</label>
+                <input
+                  type="text"
+                  value={currentBomVersion || 'None'}
+                  readOnly
+                  className="w-full px-4 py-2 border border-slate-300 rounded-lg bg-slate-50 text-slate-700"
+                />
+             </div>
+             <div>
+                <label className="block text-sm font-medium text-slate-900 mb-2">
+                  New BoM Version <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                    value={bomVersion}
+                    onChange={(e) => setBomVersion(e.target.value)}
+                    placeholder="e.g. v1.0"
+                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+             </div>
           </div>
 
           {/* Components Section */}

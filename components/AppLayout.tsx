@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, ReactNode } from 'react'
 import { useRouter, usePathname } from 'next/navigation';
 import { Home, Package, Layers, FileEdit, BarChart3, Settings, ChevronRight, Bell } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { VoiceAssistant } from './VoiceAssistant';
 
 interface NotificationItem {
   id: string
@@ -291,6 +292,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           {children}
         </main>
       </div>
+      <VoiceAssistant />
     </div>
   );
 }

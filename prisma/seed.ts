@@ -6,7 +6,7 @@ async function seedRoles() {
   const roles = [
     { name: 'Admin', description: 'Full system access and user management', permissions: 'Full Access' },
     { name: 'Engineer', description: 'Create and modify products, BoMs, ECOs', permissions: 'Read/Write' },
-    { name: 'MCO Manager', description: 'Approve or reject ECOs', permissions: 'Approve' },
+    { name: 'ECO Manager', description: 'Approve or reject ECOs', permissions: 'Approve' },
     { name: 'Operations', description: 'View and implement approved ECOs', permissions: 'Read/Implement' },
   ]
   for (const role of roles) {
@@ -22,11 +22,11 @@ async function seedUsers() {
   const users = [
     { name: 'System Admin', email: 'admin@example.com', password: 'password123', role: 'Admin', status: 'Active' },
     { name: 'Sarah Engineer', email: 'sarah@example.com', password: 'password123', role: 'Engineer', status: 'Active' },
-    { name: 'Michael Approver', email: 'michael@example.com', password: 'password123', role: 'MCO Manager', status: 'Active' },
+    { name: 'Michael Approver', email: 'michael@example.com', password: 'password123', role: 'ECO Manager', status: 'Active' },
     { name: 'John Operations', email: 'john@example.com', password: 'password123', role: 'Operations', status: 'Active' },
     { name: 'Emma Engineer', email: 'emma@example.com', password: 'password123', role: 'Engineer', status: 'Active' },
     { name: 'David Admin', email: 'david@example.com', password: 'password123', role: 'Admin', status: 'Active' },
-    { name: 'Lisa Approver', email: 'lisa@example.com', password: 'password123', role: 'MCO Manager', status: 'Active' },
+    { name: 'Lisa Approver', email: 'lisa@example.com', password: 'password123', role: 'ECO Manager', status: 'Active' },
   ]
   for (const user of users) {
     const exists = await prisma.user.findUnique({ where: { email: user.email } })
@@ -512,33 +512,33 @@ async function seedECOApprovals() {
   const ecoApprovals: Record<string, Array<{ role: string; name: string; status: string }>> = {
     '2025-001': [
       { role: 'Engineer', name: 'Sarah Engineer', status: 'Approved' },
-      { role: 'MCO Manager', name: 'Michael Approver', status: 'Approved' },
+      { role: 'ECO Manager', name: 'Michael Approver', status: 'Approved' },
     ],
     '2025-002': [
       { role: 'Engineer', name: 'Emma Engineer', status: 'Approved' },
-      { role: 'MCO Manager', name: 'Lisa Approver', status: 'Approved' },
+      { role: 'ECO Manager', name: 'Lisa Approver', status: 'Approved' },
     ],
     '2025-003': [
       { role: 'Engineer', name: 'Sarah Engineer', status: 'Approved' },
-      { role: 'MCO Manager', name: 'Michael Approver', status: 'Approved' },
+      { role: 'ECO Manager', name: 'Michael Approver', status: 'Approved' },
       { role: 'Operations', name: 'John Operations', status: 'Approved' },
     ],
     '2025-004': [
       { role: 'Engineer', name: 'Emma Engineer', status: 'Approved' },
-      { role: 'MCO Manager', name: 'Michael Approver', status: 'Pending' },
+      { role: 'ECO Manager', name: 'Michael Approver', status: 'Pending' },
     ],
     '2025-005': [
       { role: 'Engineer', name: 'Sarah Engineer', status: 'Pending' },
-      { role: 'MCO Manager', name: 'Lisa Approver', status: 'Pending' },
+      { role: 'ECO Manager', name: 'Lisa Approver', status: 'Pending' },
     ],
     '2025-006': [
       { role: 'Engineer', name: 'Emma Engineer', status: 'Approved' },
-      { role: 'MCO Manager', name: 'Michael Approver', status: 'Pending' },
+      { role: 'ECO Manager', name: 'Michael Approver', status: 'Pending' },
       { role: 'Operations', name: 'John Operations', status: 'Pending' },
     ],
     '2025-007': [
       { role: 'Engineer', name: 'Sarah Engineer', status: 'Approved' },
-      { role: 'MCO Manager', name: 'Lisa Approver', status: 'Approved' },
+      { role: 'ECO Manager', name: 'Lisa Approver', status: 'Approved' },
       { role: 'Operations', name: 'John Operations', status: 'Approved' },
     ],
   }
@@ -682,6 +682,24 @@ export async function main() {
   console.log('🌱 Starting comprehensive database seeding...\n')
 
   try {
+    console.log('🧹 Cleaning up existing data...')
+    // Delete in reverse order of dependencies
+    await prisma.notification.deleteMany()
+    await prisma.userActivity.deleteMany()
+    await prisma.eCOAuditLog.deleteMany()
+    await prisma.eCOApproval.deleteMany()
+    await prisma.eCOChange.deleteMany()
+    await prisma.eCO.deleteMany()
+    await prisma.boMOperation.deleteMany()
+    await prisma.boMComponent.deleteMany()
+    await prisma.boM.deleteMany()
+    await prisma.productVersion.deleteMany()
+    await prisma.product.deleteMany()
+    await prisma.user.deleteMany()
+    await prisma.role.deleteMany()
+    await prisma.systemSetting.deleteMany()
+    console.log('✓ Cleanup complete')
+
     await seedRoles()
     await seedUsers()
     await seedProducts()

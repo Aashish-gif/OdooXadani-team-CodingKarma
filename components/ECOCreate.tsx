@@ -145,7 +145,7 @@ export function ECOCreate({ onNavigate, productId, role }: ECOCreateProps) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ecoId: `ECO-${Math.floor(1000 + Math.random() * 9000)}`, // Simple auto-gen
+          ecoId: `ECO${Math.floor(100000 + Math.random() * 900000)}`, // Simple auto-gen (6 digits, no dash)
           title: ecoTitle,
           type: ecoType,
           productId: product?.id,
