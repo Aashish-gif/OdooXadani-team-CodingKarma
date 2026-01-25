@@ -70,11 +70,34 @@ export async function DELETE(
     { params }: { params: { id: string } }
 ) {
     try {
+        // Check if user exists
+        const userToDelete = await prisma.user.findUnique({
+            where: { id: params.id }
+        });
+        
+        if (!userToDelete) {
+            return NextResponse.json(
+                { error: 'User not found' },
+                { status: 404 }
+            );
+        }
+        
+        // Prevent deletion of admin users (security measure)
+        if (userToDelete.role === 'Admin') {
+            return NextResponse.json(
+                { error: 'Cannot delete admin users' },
+                { status: 403 }
+            );
+        }
+        
+        // Delete the user
         await prisma.user.delete({
             where: { id: params.id }
         });
-        return NextResponse.json({ message: 'User deleted' });
+        
+        return NextResponse.json({ message: 'User deleted successfully' });
     } catch (error) {
+        console.error('Error deleting user:', error);
         return NextResponse.json(
             { error: 'Failed to delete user' },
             { status: 500 }

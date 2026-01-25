@@ -8,12 +8,12 @@ interface LoginPageProps {
 }
 
 const userAccounts = [
-  { email: 'john.smith@example.com', password: 'engineer123', role: 'Engineer' as Role, name: 'John Smith' },
-  { email: 'sarah.chen@example.com', password: 'engineer123', role: 'Engineer' as Role, name: 'Sarah Chen' },
-  { email: 'jennifer.liu@example.com', password: 'approver123', role: 'Approver' as Role, name: 'Jennifer Liu' },
-  { email: 'michael.torres@example.com', password: 'approver123', role: 'Approver' as Role, name: 'Michael Torres' },
-  { email: 'david.park@example.com', password: 'ops123', role: 'Operations' as Role, name: 'David Park' },
-  { email: 'admin@example.com', password: 'admin123', role: 'Admin' as Role, name: 'Admin User' },
+  { email: 'admin@example.com', password: 'password123', role: 'Admin' as Role, name: 'System Admin' },
+  { email: 'sarah@example.com', password: 'password123', role: 'Engineer' as Role, name: 'Sarah Engineer' },
+  { email: 'michael@example.com', password: 'password123', role: 'Approver' as Role, name: 'Michael Approver' },
+  { email: 'john@example.com', password: 'password123', role: 'Operations' as Role, name: 'John Operations' },
+  { email: 'emma@example.com', password: 'password123', role: 'Engineer' as Role, name: 'Emma Engineer' },
+  { email: 'david@example.com', password: 'password123', role: 'Admin' as Role, name: 'David Admin' },
 ];
 
 export function LoginPage({ onLogin }: LoginPageProps) {
@@ -199,7 +199,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
               <div className="mt-6 text-center">
                 <p className="text-xs text-slate-500">
                   Demo credentials: Use any account above or<br />
-                  Email: admin@example.com | Password: admin123
+                  Email: admin@example.com | Password: password123
                 </p>
               </div>
             </div>

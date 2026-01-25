@@ -96,13 +96,14 @@ export function ProductsList({ onNavigate, role }: ProductsListProps) {
       : 'bg-slate-100 text-slate-600';
   };
 
-  // Calculate chart data based on loaded products - status distribution
-  const statusData = productsList.reduce((acc: any[], product) => {
-    const existing = acc.find(item => item.status === (product.status || 'Active'));
+  // Calculate chart data based on loaded products - category distribution
+  const categoryData = productsList.reduce((acc: any[], product) => {
+    const category = product.category || 'Uncategorized';
+    const existing = acc.find(item => item.category === category);
     if (existing) {
       existing.count += 1;
     } else {
-      acc.push({ status: (product.status || 'Active'), count: 1 });
+      acc.push({ category: category, count: 1 });
     }
     return acc;
   }, []);
@@ -113,15 +114,15 @@ export function ProductsList({ onNavigate, role }: ProductsListProps) {
       {productsList.length > 0 && (
         <div className="bg-white rounded-xl border border-slate-200 p-6">
           <div className="mb-6">
-            <h3 className="text-lg font-semibold text-slate-900">Product Distribution by Status</h3>
+            <h3 className="text-lg font-semibold text-slate-900">Product Distribution by Category</h3>
             <p className="text-sm text-slate-600 mt-1">
               Showing {productsList.length} products
             </p>
           </div>
           <ResponsiveContainer width="100%" height={250}>
-            <BarChart data={statusData}>
+            <BarChart data={categoryData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-              <XAxis dataKey="status" stroke="#64748b" style={{ fontSize: '12px' }} />
+              <XAxis dataKey="category" stroke="#64748b" style={{ fontSize: '12px' }} />
               <YAxis stroke="#64748b" style={{ fontSize: '12px' }} />
               <Tooltip
                 contentStyle={{

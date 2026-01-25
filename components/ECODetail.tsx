@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { ArrowLeft, Check, X, CheckCircle2, Clock, FileText, GitCompare, History, ScrollText } from 'lucide-react';
 
 type Page = any;
@@ -16,6 +17,8 @@ export function ECODetail({ ecoId, onNavigate, role }: ECODetailProps) {
   const [eco, setEco] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { currentUser } = useAuth();
 
   useEffect(() => {
     const fetchECO = async () => {
@@ -38,8 +41,36 @@ export function ECODetail({ ecoId, onNavigate, role }: ECODetailProps) {
     fetchECO();
   }, [ecoId]);
 
-  const canApprove = role === 'Approver' && eco.status === 'Pending Approval';
+  const canApprove = role === 'Approver' && eco?.status === 'Pending Approval';
   const canValidate = role === 'Operations';
+  const canSubmitDraft = (role === 'Engineer' || role === 'Admin') && eco?.status === 'Draft';
+  const canMarkImplemented = role === 'Approver' && eco?.status === 'Approved';
+  const canMarkCompleted = role === 'Approver' && eco?.status === 'Implementation';
+
+  const handleSubmitForApproval = async () => {
+    if (!eco) return;
+    setIsSubmitting(true);
+    try {
+      const response = await fetch(`/api/eco/${ecoId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'Pending Approval', stage: 'Approval' }),
+      });
+      if (response.ok) {
+        const updated = await response.json();
+        setEco(updated);
+        alert('ECO submitted for approval');
+      } else {
+        const data = await response.json();
+        alert(data.error || 'Failed to submit ECO');
+      }
+    } catch (e) {
+      console.error('Submit for approval failed', e);
+      alert('Error submitting ECO for approval');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   if (isLoading) {
     return <div className="text-center py-12 text-slate-500">Loading ECO details...</div>;
@@ -70,6 +101,10 @@ export function ECODetail({ ecoId, onNavigate, role }: ECODetailProps) {
         return 'bg-emerald-100 text-emerald-700';
       case 'Rejected':
         return 'bg-red-100 text-red-700';
+      case 'Implementation':
+        return 'bg-amber-100 text-amber-700';
+      case 'Completed':
+        return 'bg-blue-100 text-blue-700';
       default:
         return 'bg-blue-100 text-blue-700';
     }
@@ -80,8 +115,29 @@ export function ECODetail({ ecoId, onNavigate, role }: ECODetailProps) {
     return stages.indexOf(eco.stage);
   };
 
-  const handleApprove = () => {
-    alert(`ECO approved with comment: ${approvalComment || 'No comment'}`);
+  const handleApprove = async () => {
+    setIsSubmitting(true);
+    try {
+      const response = await fetch(`/api/eco/${ecoId}/approve`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ approverName: currentUser?.name || 'Approver', comment: approvalComment }),
+      });
+      if (response.ok) {
+        const updated = await response.json();
+        setEco(updated);
+        setApprovalComment('');
+        alert('ECO approved successfully');
+      } else {
+        const data = await response.json();
+        alert(data.error || 'Failed to approve ECO');
+      }
+    } catch (e) {
+      console.error('Approve ECO failed', e);
+      alert('Error approving ECO');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleReject = () => {
@@ -90,6 +146,56 @@ export function ECODetail({ ecoId, onNavigate, role }: ECODetailProps) {
       return;
     }
     alert(`ECO rejected with comment: ${approvalComment}`);
+  };
+
+  const handleMarkImplemented = async () => {
+    setIsSubmitting(true);
+    try {
+      const response = await fetch(`/api/eco/${ecoId}/implement`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ approverName: currentUser?.name || 'Approver', comment: approvalComment }),
+      });
+      if (response.ok) {
+        const updated = await response.json();
+        setEco(updated);
+        setApprovalComment('');
+        alert('ECO marked Implemented');
+      } else {
+        const data = await response.json();
+        alert(data.error || 'Failed to mark Implemented');
+      }
+    } catch (e) {
+      console.error('Mark Implemented failed', e);
+      alert('Error marking Implemented');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleMarkCompleted = async () => {
+    setIsSubmitting(true);
+    try {
+      const response = await fetch(`/api/eco/${ecoId}/complete`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ approverName: currentUser?.name || 'Approver', comment: approvalComment }),
+      });
+      if (response.ok) {
+        const updated = await response.json();
+        setEco(updated);
+        setApprovalComment('');
+        alert('ECO marked Completed');
+      } else {
+        const data = await response.json();
+        alert(data.error || 'Failed to mark Completed');
+      }
+    } catch (e) {
+      console.error('Mark Completed failed', e);
+      alert('Error marking Completed');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -166,8 +272,7 @@ export function ECODetail({ ecoId, onNavigate, role }: ECODetailProps) {
             {[
               { id: 'changes', label: 'Proposed Changes', icon: FileText },
               { id: 'comparison', label: 'Change Comparison', icon: GitCompare },
-              { id: 'approvals', label: 'Approval History', icon: CheckCircle2 },
-              { id: 'audit', label: 'Audit Log', icon: ScrollText },
+              { id: 'approvals', label: 'Audit Log', icon: CheckCircle2 }
             ].map((tab) => {
               const Icon = tab.icon;
               return (
@@ -233,7 +338,7 @@ export function ECODetail({ ecoId, onNavigate, role }: ECODetailProps) {
                     {/* Old Version */}
                     <div>
                       <div className="bg-slate-100 px-4 py-2 rounded-t-lg border border-slate-200">
-                        <h5 className="font-medium text-slate-900">Current Version</h5>
+                        <h5 className="font-medium text-slate-900">Current Version {eco.currentVersion ? `(${eco.currentVersion})` : ''}</h5>
                       </div>
                       <div className="border border-t-0 border-slate-200 rounded-b-lg divide-y divide-slate-200">
                         {eco.changes?.map((change: any, index: number) => (
@@ -252,7 +357,7 @@ export function ECODetail({ ecoId, onNavigate, role }: ECODetailProps) {
                     {/* New Version */}
                     <div>
                       <div className="bg-blue-100 px-4 py-2 rounded-t-lg border border-blue-200">
-                        <h5 className="font-medium text-blue-900">Proposed Version</h5>
+                        <h5 className="font-medium text-blue-900">Proposed Version {eco.proposedVersion ? `(${eco.proposedVersion})` : eco.currentVersion ? `(${eco.currentVersion} → Next)` : ''}</h5>
                       </div>
                       <div className="border border-t-0 border-blue-200 rounded-b-lg divide-y divide-blue-200">
                         {eco.changes?.map((change: any, index: number) => (
@@ -280,8 +385,8 @@ export function ECODetail({ ecoId, onNavigate, role }: ECODetailProps) {
                     <div key={index} className="p-4 border border-slate-200 rounded-lg">
                       <div className="flex items-center justify-between mb-2">
                         <div>
-                          <div className="font-medium text-slate-900">{approval.approverRole || 'Approver'}</div>
-                          <div className="text-sm text-slate-600">{approval.approverName || 'Unknown'}</div>
+                          <div className="font-medium text-slate-900">{approval.role || 'Approver'}</div>
+                          <div className="text-sm text-slate-600">{approval.name || 'Unknown'}</div>
                         </div>
                         <div className="flex items-center gap-2">
                           {approval.status === 'Approved' && (
@@ -296,28 +401,35 @@ export function ECODetail({ ecoId, onNavigate, role }: ECODetailProps) {
                               Rejected
                             </span>
                           )}
-                          {approval.status === 'Pending' && (
+                          {/* Do not render a per-approver Pending badge */}
+                          {approval.status === 'Implementation' && (
                             <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-amber-100 text-amber-700">
                               <Clock className="w-4 h-4" />
-                              Pending
+                              Implementation
+                            </span>
+                          )}
+                          {approval.status === 'Completed' && (
+                            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-700">
+                              <CheckCircle2 className="w-4 h-4" />
+                              Completed
                             </span>
                           )}
                         </div>
                       </div>
-                      {approval.updatedAt && (
+                      {approval.date && (
                         <div className="text-sm text-slate-600 mb-1">
-                          {new Date(approval.updatedAt).toLocaleString()}
+                          {new Date(approval.date).toLocaleString()}
                         </div>
                       )}
-                      {approval.comments && (
+                      {approval.comment && (
                         <div className="text-sm text-slate-700 mt-2 p-2 bg-slate-50 rounded">
-                          {approval.comments}
+                          {approval.comment}
                         </div>
                       )}
                     </div>
                   ))}
                   {(!eco.approvals || eco.approvals.length === 0) && (
-                    <div className="text-center py-12 text-slate-500">No approval history available</div>
+                    <div className="text-center py-12 text-slate-500">No audit log available</div>
                   )}
                 </div>
               )}
@@ -373,6 +485,62 @@ export function ECODetail({ ecoId, onNavigate, role }: ECODetailProps) {
               )}
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Implementation and Completion Actions (Approver only) */}
+      {(canMarkImplemented || canMarkCompleted) && (
+        <div className="bg-white rounded-xl border border-slate-200 p-6">
+          <h4 className="font-medium text-slate-900 mb-4">Progress Actions</h4>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-900 mb-2">
+                Comment (optional)
+              </label>
+              <textarea
+                value={approvalComment}
+                onChange={(e) => setApprovalComment(e.target.value)}
+                placeholder="Add any notes for implementation/completion..."
+                rows={3}
+                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div className="flex items-center gap-3">
+              {canMarkImplemented && (
+                <button
+                  onClick={handleMarkImplemented}
+                  disabled={isSubmitting}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors disabled:opacity-50"
+                >
+                  {isSubmitting ? 'Updating...' : 'Mark Implementation'}
+                </button>
+              )}
+              {canMarkCompleted && (
+                <button
+                  onClick={handleMarkCompleted}
+                  disabled={isSubmitting}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50"
+                >
+                  {isSubmitting ? 'Updating...' : 'Mark Completed'}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Draft Submission */}
+      {canSubmitDraft && (
+        <div className="bg-white rounded-xl border border-slate-200 p-6">
+          <h4 className="font-medium text-slate-900 mb-4">Submit Draft</h4>
+          <p className="text-sm text-slate-600 mb-4">Send this ECO for approval. Approvers will review and decide.</p>
+          <button
+            onClick={handleSubmitForApproval}
+            disabled={isSubmitting}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+          >
+            {isSubmitting ? 'Submitting...' : 'Submit for Approval'}
+          </button>
         </div>
       )}
     </div>

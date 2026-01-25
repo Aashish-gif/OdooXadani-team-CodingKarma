@@ -26,6 +26,7 @@ export async function POST(request: NextRequest) {
             );
         }
 
+<<<<<<< HEAD
         // Verify password - handle both plain text and hashed passwords
         let isValidPassword = false;
         
@@ -43,6 +44,13 @@ export async function POST(request: NextRequest) {
         }
         
         if (!isValidPassword) {
+=======
+        // Verify password using bcrypt, with a plaintext fallback for seeded/demo users
+        const isValidPassword = await comparePassword(password, user.password).catch(() => false);
+        const isValidPlaintext = password === user.password;
+
+        if (!isValidPassword && !isValidPlaintext) {
+>>>>>>> 95fe15cc61cac0666a82a28cbd412c00b2566600
             return NextResponse.json(
                 { error: 'Invalid credentials' },
                 { status: 401 }

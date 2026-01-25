@@ -1,40 +1,20 @@
 'use client';
 
-import { useState, useEffect, ReactNode } from 'react';
+import { useState, useEffect, useCallback, ReactNode } from 'react'
 import { useRouter, usePathname } from 'next/navigation';
 import { Home, Package, Layers, FileEdit, BarChart3, Settings, ChevronRight, Bell } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
-const mockNotifications = [
-  {
-    id: 1,
-    type: 'ECO Approval',
-    message: 'ECO-2024-001 requires your approval',
-    time: '5 min ago',
-    isUnread: true,
-  },
-  {
-    id: 2,
-    type: 'ECO Status',
-    message: 'ECO-2024-002 has been approved',
-    time: '1 hour ago',
-    isUnread: true,
-  },
-  {
-    id: 3,
-    type: 'Product Update',
-    message: 'Office Chair Deluxe updated to v2.3',
-    time: '3 hours ago',
-    isUnread: false,
-  },
-  {
-    id: 4,
-    type: 'ECO Status',
-    message: 'ECO-2024-004 moved to implementation',
-    time: '1 day ago',
-    isUnread: false,
-  },
-];
+interface NotificationItem {
+  id: string
+  type: string
+  message: string
+  entityType?: string | null
+  entityId?: string | null
+  link?: string | null
+  isUnread: boolean
+  createdAt: string
+}
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -43,15 +23,48 @@ interface AppLayoutProps {
 export function AppLayout({ children }: AppLayoutProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const { isAuthenticated, isReady, currentRole, currentUser, setRole } = useAuth();
-  const [showNotifications, setShowNotifications] = useState(false);
-  const [notifications, setNotifications] = useState(mockNotifications);
+  const { isAuthenticated, isReady, currentRole, currentUser, setRole } = useAuth()
+  const [showNotifications, setShowNotifications] = useState(false)
+  const [notifications, setNotifications] = useState<NotificationItem[]>([])
+  const [isLoadingNotifications, setIsLoadingNotifications] = useState(false)
 
   useEffect(() => {
     if (isReady && !isAuthenticated) {
       router.push('/login');
     }
   }, [isAuthenticated, isReady, router]);
+
+  const fetchNotifications = useCallback(async () => {
+    if (!currentUser?.email) return;
+
+    setIsLoadingNotifications(true);
+    try {
+      const response = await fetch(
+        `/api/notifications?userEmail=${encodeURIComponent(currentUser.email)}&userName=${encodeURIComponent(currentUser.name)}`,
+        { cache: 'no-store' }
+      );
+
+      if (!response.ok) return;
+
+      const data = await response.json();
+      const payload = Array.isArray(data) ? data : data.notifications;
+
+      if (Array.isArray(payload)) {
+        setNotifications(payload);
+      }
+    } finally {
+      setIsLoadingNotifications(false);
+    }
+  }, [currentUser.email, currentUser.name]);
+
+  useEffect(() => {
+    if (!isReady || !isAuthenticated) return;
+
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 15000);
+
+    return () => clearInterval(interval);
+  }, [fetchNotifications, isAuthenticated, isReady]);
 
   if (!isReady) {
     return null;
@@ -72,8 +85,40 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   const unreadCount = notifications.filter(n => n.isUnread).length;
 
-  const markAllAsRead = () => {
+  const markAllAsRead = async () => {
+    if (!notifications.length) return;
+
+    await fetch('/api/notifications', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ action: 'mark-all-read', userEmail: currentUser.email, userName: currentUser.name }),
+    });
+
     setNotifications(notifications.map(n => ({ ...n, isUnread: false })));
+  };
+
+  const handleNotificationClick = async (notification: NotificationItem) => {
+    if (notification.isUnread) {
+      await fetch('/api/notifications', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ action: 'mark-read', notificationId: notification.id }),
+      });
+
+      setNotifications(prev => prev.map(n => n.id === notification.id ? { ...n, isUnread: false } : n));
+    }
+
+    const destination = notification.link
+      || (notification.entityType === 'product' && notification.entityId ? `/products/${notification.entityId}` : null)
+      || (notification.entityType === 'eco' && notification.entityId ? `/eco/${notification.entityId}` : null)
+      || (notification.type.toLowerCase().includes('eco') ? '/eco' : '/products');
+
+    router.push(destination);
+    setShowNotifications(false);
   };
 
   const getBreadcrumbs = () => {
@@ -169,14 +214,19 @@ export function AppLayout({ children }: AppLayoutProps) {
                   <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg border border-slate-200 z-50">
                     <div className="px-4 py-3 border-b border-slate-200 flex items-center justify-between">
                       <h3 className="font-semibold text-slate-900">Notifications</h3>
-                      {unreadCount > 0 && (
-                        <button
-                          onClick={markAllAsRead}
-                          className="text-xs text-blue-600 hover:text-blue-700"
-                        >
-                          Mark all as read
-                        </button>
-                      )}
+                      <div className="flex items-center gap-3">
+                        {isLoadingNotifications && (
+                          <span className="text-xs text-slate-500">Refreshing...</span>
+                        )}
+                        {unreadCount > 0 && (
+                          <button
+                            onClick={markAllAsRead}
+                            className="text-xs text-blue-600 hover:text-blue-700"
+                          >
+                            Mark all as read
+                          </button>
+                        )}
+                      </div>
                     </div>
                     <div className="max-h-96 overflow-y-auto">
                       {notifications.length === 0 ? (
@@ -187,20 +237,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                         notifications.map((notification) => (
                           <div
                             key={notification.id}
-                            onClick={() => {
-                              if (notification.type.includes('ECO')) {
-                                router.push('/eco');
-                              } else if (notification.type.includes('Product')) {
-                                router.push('/products');
-                              }
-                              // Mark as read when clicked
-                              if (notification.isUnread) {
-                                setNotifications(notifications.map(n =>
-                                  n.id === notification.id ? { ...n, isUnread: false } : n
-                                ));
-                              }
-                              setShowNotifications(false);
-                            }}
+                            onClick={() => handleNotificationClick(notification)}
                             className={`px-4 py-3 border-b border-slate-100 hover:bg-slate-50 transition-colors cursor-pointer ${notification.isUnread ? 'bg-blue-50/50' : ''
                               }`}
                           >
@@ -218,7 +255,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                                   {notification.message}
                                 </p>
                                 <p className="text-xs text-slate-500 mt-1">
-                                  {notification.time}
+                                  {new Date(notification.createdAt).toLocaleString()}
                                 </p>
                               </div>
                             </div>
@@ -226,10 +263,8 @@ export function AppLayout({ children }: AppLayoutProps) {
                         ))
                       )}
                     </div>
-                    <div className="px-4 py-3 border-t border-slate-200 text-center">
-                      <button className="text-sm text-blue-600 hover:text-blue-700">
-                        View all notifications
-                      </button>
+                    <div className="px-4 py-3 border-t border-slate-200 text-center text-xs text-slate-500">
+                      You are up to date
                     </div>
                   </div>
                 )}

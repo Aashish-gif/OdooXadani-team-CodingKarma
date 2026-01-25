@@ -1,26 +1,34 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { NextRequest, NextResponse } from 'next/server'
+import { prisma } from '@/lib/prisma'
+import { getOrCreateUserByEmail } from '@/lib/notifications'
 
 export async function GET(request: NextRequest) {
     try {
-        const searchParams = request.nextUrl.searchParams;
-        const userId = searchParams.get('userId');
+        const searchParams = request.nextUrl.searchParams
+        const userId = searchParams.get('userId')
+        const userEmail = searchParams.get('userEmail')
+        const userName = searchParams.get('userName') || undefined
 
-        if (!userId) {
-            return NextResponse.json({ error: 'User ID required' }, { status: 400 });
+        let resolvedUserId = userId || undefined
+
+        if (!resolvedUserId && userEmail) {
+            const user = await getOrCreateUserByEmail(userEmail, userName)
+            resolvedUserId = user.id
+        }
+
+        if (!resolvedUserId) {
+            return NextResponse.json({ error: 'User identifier required' }, { status: 400 })
         }
 
         const notifications = await prisma.notification.findMany({
-            where: { userId },
+            where: { userId: resolvedUserId },
             orderBy: { createdAt: 'desc' },
-            take: 50
-        });
+            take: 50,
+        })
 
-        // Calculate unread count
-        // This could also be a separate endpoint or header
-        // const unreadCount = notifications.filter(n => n.isUnread).length;
+        const unreadCount = notifications.filter((n) => n.isUnread).length
 
-        return NextResponse.json(notifications);
+        return NextResponse.json({ notifications, unreadCount, userId: resolvedUserId })
     } catch (error) {
         return NextResponse.json(
             { error: 'Failed to fetch notifications' },
@@ -31,41 +39,48 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
     try {
-        const body = await request.json();
-        const { action, notificationId, userId, message, type } = body;
+        const body = await request.json()
+        const { action, notificationId, userId, userEmail, userName, message, type, entityType, entityId, link } = body
 
-        // Mark as read
+        let targetUserId = userId || undefined
+
+        if (!targetUserId && userEmail) {
+            const user = await getOrCreateUserByEmail(userEmail, userName)
+            targetUserId = user.id
+        }
+
         if (action === 'mark-read' && notificationId) {
             await prisma.notification.update({
                 where: { id: notificationId },
-                data: { isUnread: false }
-            });
-            return NextResponse.json({ success: true });
+                data: { isUnread: false },
+            })
+            return NextResponse.json({ success: true })
         }
 
-        // Mark all as read
-        if (action === 'mark-all-read' && userId) {
+        if (action === 'mark-all-read' && targetUserId) {
             await prisma.notification.updateMany({
-                where: { userId },
-                data: { isUnread: false }
-            });
-            return NextResponse.json({ success: true });
+                where: { userId: targetUserId },
+                data: { isUnread: false },
+            })
+            return NextResponse.json({ success: true })
         }
 
-        // Create notification
-        if (userId && message && type) {
+        if (targetUserId && message && type) {
             const notification = await prisma.notification.create({
                 data: {
-                    userId,
+                    userId: targetUserId,
                     message,
                     type,
-                    isUnread: true
-                }
-            });
-            return NextResponse.json(notification, { status: 201 });
+                    entityType,
+                    entityId,
+                    link,
+                    isUnread: true,
+                },
+            })
+            return NextResponse.json(notification, { status: 201 })
         }
 
-        return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
+        return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
     } catch (error) {
         return NextResponse.json(
             { error: 'Failed to process notification' },

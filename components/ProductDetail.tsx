@@ -16,6 +16,7 @@ export function ProductDetail({ productId, onNavigate, role }: ProductDetailProp
   const [activeTab, setActiveTab] = useState<'overview' | 'versions' | 'attachments'>('overview');
   const [product, setProduct] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -45,6 +46,33 @@ export function ProductDetail({ productId, onNavigate, role }: ProductDetailProp
   console.log('Product:', product);
 
   const canCreateECO = role === 'Engineer' || role === 'Admin';
+  const canChangeStatus = role === 'Engineer' || role === 'Admin';
+
+  const handleStatusChange = async (newStatus: string) => {
+    if (!product || isUpdatingStatus) return;
+
+    setIsUpdatingStatus(true);
+    try {
+      const response = await fetch(`/api/products/${productId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (response.ok) {
+        const updatedProduct = await response.json();
+        setProduct({ ...product, status: updatedProduct.status });
+        alert('Status updated successfully');
+      } else {
+        alert('Failed to update status');
+      }
+    } catch (error) {
+      console.error('Error updating status:', error);
+      alert('Error updating status');
+    } finally {
+      setIsUpdatingStatus(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -87,9 +115,25 @@ export function ProductDetail({ productId, onNavigate, role }: ProductDetailProp
                 <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-700">
                   {product.currentVersion}
                 </span>
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-emerald-100 text-emerald-700">
-                  {product.status}
-                </span>
+                {canChangeStatus ? (
+                  <select
+                    value={product.status}
+                    onChange={(e) => handleStatusChange(e.target.value)}
+                    disabled={isUpdatingStatus}
+                    className={`px-3 py-1 rounded-full text-sm font-medium border-0 cursor-pointer ${
+                      product.status === 'Active'
+                        ? 'bg-emerald-100 text-emerald-700'
+                        : 'bg-slate-100 text-slate-700'
+                    } ${isUpdatingStatus ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  >
+                    <option value="Active">Active</option>
+                    <option value="Archived">Archived</option>
+                  </select>
+                ) : (
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-emerald-100 text-emerald-700">
+                    {product.status}
+                  </span>
+                )}
               </div>
             </div>
             <div className="text-right">
@@ -107,7 +151,7 @@ export function ProductDetail({ productId, onNavigate, role }: ProductDetailProp
             {[
               { id: 'overview', label: 'Overview', icon: FileText },
               { id: 'versions', label: 'Version History', icon: History },
-              { id: 'attachments', label: 'Attachments', icon: Paperclip },
+              
             ].map((tab) => {
               const Icon = tab.icon;
               return (
@@ -207,12 +251,7 @@ export function ProductDetail({ productId, onNavigate, role }: ProductDetailProp
                 </div>
               )}
 
-              {activeTab === 'attachments' && (
-                <div className="text-center py-12">
-                  <Paperclip className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-                  <p className="text-slate-600">No attachments available</p>
-                </div>
-              )}
+              
             </>
           )}
         </div>

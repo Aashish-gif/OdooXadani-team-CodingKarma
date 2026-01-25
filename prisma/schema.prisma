@@ -72,19 +72,24 @@ model BoMOperation {
 }
 
 model ECO {
-  id            String        @id @default(cuid())
-  ecoId         String        @unique
-  title         String
-  type          String
-  stage         String
-  status        String
-  effectiveDate DateTime
-  createdBy     String
-  description   String?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  productId     String
-  product       Product       @relation(fields: [productId], references: [id])
+  id              String    @id @default(cuid())
+  ecoId           String    @unique
+  title           String
+  type            String
+  stage           String
+  status          String
+  effectiveDate   DateTime
+  createdBy       String
+  description     String?
+  currentVersion  String?
+  proposedVersion String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  productId       String
+  product         Product   @relation(fields: [productId], references: [id])
+
+  changes       ECOChange[]
   approvals     ECOApproval[]
   auditLog      ECOAuditLog[]
   changes       ECOChange[]
@@ -160,6 +165,9 @@ model Notification {
   id        String   @id @default(cuid())
   type      String
   message   String
+  entityType String?
+  entityId  String?
+  link      String?
   isUnread  Boolean  @default(true)
   createdAt DateTime @default(now())
   userId    String

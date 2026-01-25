@@ -15,6 +15,7 @@ export function BoMDetail({ bomId, onNavigate, role }: BoMDetailProps) {
   const [bom, setBom] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
   useEffect(() => {
     const fetchBoM = async () => {
@@ -38,6 +39,33 @@ export function BoMDetail({ bomId, onNavigate, role }: BoMDetailProps) {
   }, [bomId]);
 
   const canCreateECO = role === 'Engineer' || role === 'Admin';
+  const canChangeStatus = role === 'Engineer' || role === 'Admin';
+
+  const handleStatusChange = async (newStatus: string) => {
+    if (!bom || isUpdatingStatus) return;
+
+    setIsUpdatingStatus(true);
+    try {
+      const response = await fetch(`/api/bom/${bomId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (response.ok) {
+        const updatedBoM = await response.json();
+        setBom({ ...bom, status: updatedBoM.status });
+        alert('Status updated successfully');
+      } else {
+        alert('Failed to update status');
+      }
+    } catch (error) {
+      console.error('Error updating status:', error);
+      alert('Error updating status');
+    } finally {
+      setIsUpdatingStatus(false);
+    }
+  };
 
   if (isLoading) {
     return <div className="text-center py-12 text-slate-500">Loading BoM details...</div>;
@@ -88,9 +116,25 @@ export function BoMDetail({ bomId, onNavigate, role }: BoMDetailProps) {
               <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-700">
                 {bom.version}
               </span>
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-emerald-100 text-emerald-700">
-                {bom.status}
-              </span>
+              {canChangeStatus ? (
+                <select
+                  value={bom.status}
+                  onChange={(e) => handleStatusChange(e.target.value)}
+                  disabled={isUpdatingStatus}
+                  className={`px-3 py-1 rounded-full text-sm font-medium border-0 cursor-pointer ${
+                    bom.status === 'Active'
+                      ? 'bg-emerald-100 text-emerald-700'
+                      : 'bg-slate-100 text-slate-700'
+                  } ${isUpdatingStatus ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  <option value="Active">Active</option>
+                  <option value="Archived">Archived</option>
+                </select>
+              ) : (
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-emerald-100 text-emerald-700">
+                  {bom.status}
+                </span>
+              )}
             </div>
           </div>
           <div className="text-right">
