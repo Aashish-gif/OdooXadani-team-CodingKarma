@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Lock, User, Building2 } from 'lucide-react';
 
-type Role = 'Engineer' | 'MCO Manager' | 'Operations' | 'Admin';
+type Role = 'Engineer' | 'ECO Manager' | 'Operations' | 'Admin';
 
 interface LoginPageProps {
   onLogin: (userData: any) => void;
@@ -10,7 +10,7 @@ interface LoginPageProps {
 const userAccounts = [
   { email: 'admin@example.com', password: 'password123', role: 'Admin' as Role, name: 'System Admin' },
   { email: 'sarah@example.com', password: 'password123', role: 'Engineer' as Role, name: 'Sarah Engineer' },
-  { email: 'michael@example.com', password: 'password123', role: 'MCO Manager' as Role, name: 'Michael Approver' },
+  { email: 'michael@example.com', password: 'password123', role: 'ECO Manager' as Role, name: 'Michael Approver' },
   { email: 'john@example.com', password: 'password123', role: 'Operations' as Role, name: 'John Operations' },
   { email: 'emma@example.com', password: 'password123', role: 'Engineer' as Role, name: 'Emma Engineer' },
   { email: 'david@example.com', password: 'password123', role: 'Admin' as Role, name: 'David Admin' },

@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useCurrency } from '../contexts/CurrencyContext';
 
 type Page = any;
-type Role = 'Engineer' | 'MCO Manager' | 'Operations' | 'Admin';
+type Role = 'Engineer' | 'ECO Manager' | 'Operations' | 'Admin';
 
 interface ProductDetailProps {
   productId: string;

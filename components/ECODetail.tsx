@@ -3,7 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { ArrowLeft, Check, X, CheckCircle2, Clock, FileText, GitCompare, History, ScrollText } from 'lucide-react';
 
 type Page = any;
-type Role = 'Engineer' | 'MCO Manager' | 'Operations' | 'Admin';
+type Role = 'Engineer' | 'ECO Manager' | 'Operations' | 'Admin';
 
 interface ECODetailProps {
   ecoId: string;
@@ -41,11 +41,11 @@ export function ECODetail({ ecoId, onNavigate, role }: ECODetailProps) {
     fetchECO();
   }, [ecoId]);
 
-  const canApprove = role === 'MCO Manager' && eco?.status === 'Pending Approval';
+  const canApprove = role === 'ECO Manager' && eco?.status === 'Pending Approval';
   const canValidate = role === 'Operations';
   const canSubmitDraft = (role === 'Engineer' || role === 'Admin') && eco?.status === 'Draft';
-  const canMarkImplemented = role === 'MCO Manager' && eco?.status === 'Approved';
-  const canMarkCompleted = role === 'MCO Manager' && eco?.status === 'Implementation';
+  const canMarkImplemented = role === 'ECO Manager' && eco?.status === 'Approved';
+  const canMarkCompleted = role === 'ECO Manager' && eco?.status === 'Implementation';
 
   const handleSubmitForApproval = async () => {
     if (!eco) return;
@@ -121,7 +121,7 @@ export function ECODetail({ ecoId, onNavigate, role }: ECODetailProps) {
       const response = await fetch(`/api/eco/${ecoId}/approve`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ approverName: currentUser?.name || 'MCO Manager', comment: approvalComment }),
+        body: JSON.stringify({ approverName: currentUser?.name || 'ECO Manager', comment: approvalComment }),
       });
       if (response.ok) {
         const updated = await response.json();
@@ -154,7 +154,7 @@ export function ECODetail({ ecoId, onNavigate, role }: ECODetailProps) {
       const response = await fetch(`/api/eco/${ecoId}/implement`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ approverName: currentUser?.name || 'MCO Manager', comment: approvalComment }),
+        body: JSON.stringify({ approverName: currentUser?.name || 'ECO Manager', comment: approvalComment }),
       });
       if (response.ok) {
         const updated = await response.json();
@@ -179,7 +179,7 @@ export function ECODetail({ ecoId, onNavigate, role }: ECODetailProps) {
       const response = await fetch(`/api/eco/${ecoId}/complete`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ approverName: currentUser?.name || 'MCO Manager', comment: approvalComment }),
+        body: JSON.stringify({ approverName: currentUser?.name || 'ECO Manager', comment: approvalComment }),
       });
       if (response.ok) {
         const updated = await response.json();
@@ -215,14 +215,19 @@ export function ECODetail({ ecoId, onNavigate, role }: ECODetailProps) {
       <div className="bg-white rounded-xl border border-slate-200 p-6">
         <div className="flex items-start justify-between mb-6">
           <div>
-            <div className="text-sm text-slate-600 mb-1">ECO-{ecoId}</div>
+            <div className="text-sm text-slate-600 mb-1">{ecoId}</div>
             <h3 className="text-2xl font-semibold text-slate-900 mb-3">{eco.title}</h3>
             <div className="flex items-center gap-3">
               <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(eco.status)}`}>
                 {eco.status}
               </span>
+              <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                eco.type === 'Product' ? 'bg-indigo-100 text-indigo-700' : 'bg-purple-100 text-purple-700'
+              }`}>
+                {eco.type === 'Product' ? 'Product Change' : 'BoM Change'}
+              </span>
               <span className="text-sm text-slate-600">
-                {eco.type} Change • {eco.product}
+                {eco.product}
               </span>
             </div>
           </div>
@@ -385,7 +390,7 @@ export function ECODetail({ ecoId, onNavigate, role }: ECODetailProps) {
                     <div key={index} className="p-4 border border-slate-200 rounded-lg">
                       <div className="flex items-center justify-between mb-2">
                         <div>
-                          <div className="font-medium text-slate-900">{approval.role || 'MCO Manager'}</div>
+                          <div className="font-medium text-slate-900">{approval.role || 'ECO Manager'}</div>
                           <div className="text-sm text-slate-600">{approval.name || 'Unknown'}</div>
                         </div>
                         <div className="flex items-center gap-2">
@@ -488,7 +493,7 @@ export function ECODetail({ ecoId, onNavigate, role }: ECODetailProps) {
         </div>
       )}
 
-      {/* Implementation and Completion Actions (MCO Manager only) */}
+      {/* Implementation and Completion Actions (ECO Manager only) */}
       {(canMarkImplemented || canMarkCompleted) && (
         <div className="bg-white rounded-xl border border-slate-200 p-6">
           <h4 className="font-medium text-slate-900 mb-4">Progress Actions</h4>
@@ -533,7 +538,7 @@ export function ECODetail({ ecoId, onNavigate, role }: ECODetailProps) {
       {canSubmitDraft && (
         <div className="bg-white rounded-xl border border-slate-200 p-6">
           <h4 className="font-medium text-slate-900 mb-4">Submit Draft</h4>
-          <p className="text-sm text-slate-600 mb-4">Send this ECO for approval. MCO Managers will review and decide.</p>
+          <p className="text-sm text-slate-600 mb-4">Send this ECO for approval. ECO Managers will review and decide.</p>
           <button
             onClick={handleSubmitForApproval}
             disabled={isSubmitting}

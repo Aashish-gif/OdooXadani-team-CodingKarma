@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 
-type Role = 'Engineer' | 'MCO Manager' | 'Operations' | 'Admin';
+type Role = 'Engineer' | 'ECO Manager' | 'Operations' | 'Admin';
 
 interface User {
   id?: string;
@@ -145,8 +145,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           console.log('Fresh user data received:', freshUserData);
           
           const updatedUser = { ...nextUser, ...freshUserData };
+          
+          // Use role from fresh data if available
+          const finalRole = (freshUserData.role as Role) || nextRole;
+          if (freshUserData.role && freshUserData.role !== nextRole) {
+              setCurrentRole(finalRole);
+          }
+          
           setCurrentUser(updatedUser);
-          persistState({ isAuthenticated: true, user: updatedUser, role: nextRole });
+          persistState({ isAuthenticated: true, user: updatedUser, role: finalRole });
         } else {
           console.log('Profile fetch failed, using original data');
           // If fetch fails, persist the original data
@@ -182,9 +189,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const freshUserData = await response.json();
         console.log('Refreshed user data:', freshUserData);
         
+        // Update role if it exists in the fresh data
+        const freshRole = (freshUserData.role as Role) || currentRole;
+        if (freshUserData.role && freshUserData.role !== currentRole) {
+          setCurrentRole(freshRole);
+        }
+
         setCurrentUser(prev => {
           const updated = { ...prev, ...freshUserData };
-          persistState({ isAuthenticated: true, user: updated, role: currentRole });
+          persistState({ isAuthenticated: true, user: updated, role: freshRole });
           return updated;
         });
       } else {
@@ -205,9 +218,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               const retryFreshUserData = await retryResponse.json();
               console.log('Retry refreshed user data:', retryFreshUserData);
               
+              // Update role if it exists in the fresh data
+              const freshRole = (retryFreshUserData.role as Role) || currentRole;
+              if (retryFreshUserData.role && retryFreshUserData.role !== currentRole) {
+                setCurrentRole(freshRole);
+              }
+
               setCurrentUser(prev => {
                 const updated = { ...prev, ...retryFreshUserData };
-                persistState({ isAuthenticated: true, user: updated, role: currentRole });
+                persistState({ isAuthenticated: true, user: updated, role: freshRole });
                 return updated;
               });
             }

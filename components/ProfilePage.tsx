@@ -2,7 +2,7 @@ import { Mail, Phone, MapPin, Calendar, Shield, LogOut, Edit, X, Camera } from '
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 
-type Role = 'Engineer' | 'MCO Manager' | 'Operations' | 'Admin';
+type Role = 'Engineer' | 'ECO Manager' | 'Operations' | 'Admin';
 
 interface ProfilePageProps {
   user?: { name: string; email: string }; // Optional to allow override, but usually from context
@@ -12,7 +12,7 @@ interface ProfilePageProps {
 
 const roleDescriptions = {
   Engineer: 'Can create and edit ECOs, manage product data, and submit changes for approval.',
-  'MCO Manager': 'Reviews and approves engineering change orders, validates technical specifications.',
+  'ECO Manager': 'Reviews and approves engineering change orders, validates technical specifications.',
   Operations: 'Read-only access to ECO data, can validate implementation and provide operational feedback.',
   Admin: 'Full system access including user management, settings configuration, and system administration.',
 };
@@ -47,7 +47,7 @@ export function ProfilePage({ user: propUser, role, onLogout }: ProfilePageProps
     switch (role) {
       case 'Admin':
         return 'bg-purple-100 text-purple-700';
-      case 'MCO Manager':
+      case 'ECO Manager':
         return 'bg-blue-100 text-blue-700';
       case 'Engineer':
         return 'bg-emerald-100 text-emerald-700';

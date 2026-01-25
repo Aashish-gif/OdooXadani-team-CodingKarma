@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-// Mark ECO as implemented by any MCO Manager
+// Mark ECO as implemented by any ECO Manager
 export async function POST(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
@@ -9,7 +9,7 @@ export async function POST(
   try {
     const params = await context.params;
     const body = await request.json();
-    const approverName: string = body.approverName || 'MCO Manager';
+    const approverName: string = body.approverName || 'ECO Manager';
     const comment: string | undefined = body.comment;
 
     const updated = await prisma.eCO.update({
@@ -19,7 +19,7 @@ export async function POST(
         // Stage remains Implementation; completion will set stage Completed
         approvals: {
           create: {
-            role: 'MCO Manager',
+            role: 'ECO Manager',
             name: approverName,
             status: 'Implementation',
             date: new Date(),

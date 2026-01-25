@@ -1,10 +1,10 @@
-import { Eye, Plus, X, Search, Filter } from 'lucide-react';
+import { Eye, Plus, X, Search, Filter, Pencil } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useState, useEffect } from 'react';
 import { useCurrency } from '../contexts/CurrencyContext';
 
 type Page = any;
-type Role = 'Engineer' | 'MCO Manager' | 'Operations' | 'Admin';
+type Role = 'Engineer' | 'ECO Manager' | 'Operations' | 'Admin';
 
 interface ProductsListProps {
   onNavigate: (page: Page) => void;
@@ -15,6 +15,7 @@ export function ProductsList({ onNavigate, role }: ProductsListProps) {
   const { formatPrice } = useCurrency();
   const [productsList, setProductsList] = useState<any[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterCategory, setFilterCategory] = useState<string>('all');
@@ -28,6 +29,15 @@ export function ProductsList({ onNavigate, role }: ProductsListProps) {
     productId: '',
     description: '',
     manufacturer: '',
+  });
+  const [editFormData, setEditFormData] = useState({
+     id: '',
+     name: '',
+     category: '',
+     salePrice: '',
+     costPrice: '',
+     description: '',
+     manufacturer: '',
   });
 
   const fetchProducts = async () => {
@@ -53,6 +63,7 @@ export function ProductsList({ onNavigate, role }: ProductsListProps) {
   }, [searchQuery, filterStatus, filterCategory]);
 
   const canAddProduct = role === 'Engineer' || role === 'Admin';
+  const canEditProduct = role === 'Engineer' || role === 'Admin';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,6 +100,49 @@ export function ProductsList({ onNavigate, role }: ProductsListProps) {
       alert('An error occurred while creating the product.');
     }
   };
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const response = await fetch(`/api/products/${editFormData.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: editFormData.name,
+          category: editFormData.category,
+          salePrice: parseFloat(editFormData.salePrice),
+          costPrice: parseFloat(editFormData.costPrice),
+          description: editFormData.description,
+          manufacturer: editFormData.manufacturer,
+        }),
+      });
+
+      if (response.ok) {
+        alert(`Product "${editFormData.name}" updated successfully!`);
+        setShowEditModal(false);
+        fetchProducts();
+      } else {
+        const data = await response.json();
+        alert(`Failed to update product: ${data.error}`);
+      }
+    } catch (error) {
+      alert('An error occurred while updating the product.');
+    }
+  };
+
+  const openEditModal = (product: any) => {
+    setEditFormData({
+      id: product.productId || product.id,
+      name: product.name,
+      category: product.category,
+      salePrice: String(product.salePrice),
+      costPrice: String(product.costPrice),
+      description: product.description || '',
+      manufacturer: product.manufacturer || '',
+    });
+    setShowEditModal(true);
+  };
+
 
   const getStatusColor = (status: string) => {
     return status === 'Active'
@@ -207,9 +261,6 @@ export function ProductsList({ onNavigate, role }: ProductsListProps) {
                   Category
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
-                  Current Version
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
                   Sale Price
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
@@ -248,11 +299,6 @@ export function ProductsList({ onNavigate, role }: ProductsListProps) {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="text-sm text-slate-600">{product.category}</span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
-                        {product.version || 'v1.0'}
-                      </span>
-                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
                       {formatPrice(Number(product.salePrice))}
                     </td>
@@ -272,6 +318,15 @@ export function ProductsList({ onNavigate, role }: ProductsListProps) {
                         <Eye className="w-4 h-4" />
                         View
                       </button>
+                      {canEditProduct && (
+                        <button
+                          onClick={() => openEditModal(product)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-orange-700 hover:bg-orange-50 rounded-lg transition-colors ml-2"
+                        >
+                          <Pencil className="w-4 h-4" />
+                          Edit
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))
@@ -280,6 +335,127 @@ export function ProductsList({ onNavigate, role }: ProductsListProps) {
           </table>
         </div>
       </div>
+
+      {/* Edit Product Modal */}
+      {showEditModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between sticky top-0 bg-white">
+              <h3 className="text-lg font-semibold text-slate-900">Edit Product</h3>
+              <button
+                onClick={() => setShowEditModal(false)}
+                className="p-1 hover:bg-slate-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-slate-600" />
+              </button>
+            </div>
+
+            <form onSubmit={handleEditSubmit} className="p-6 space-y-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-slate-900 mb-2">
+                    Product Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={editFormData.name}
+                    onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-900 mb-2">
+                    Category <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={editFormData.category}
+                    onChange={(e) => setEditFormData({ ...editFormData, category: e.target.value })}
+                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  >
+                    <option value="">Select category...</option>
+                    <option value="Furniture">Furniture</option>
+                    <option value="Electronics">Electronics</option>
+                    <option value="Industrial">Industrial Equipment</option>
+                    <option value="Automotive">Automotive Components</option>
+                    <option value="Mechanical">Mechanical Parts</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-900 mb-2">
+                    Sale Price <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={editFormData.salePrice}
+                    onChange={(e) => setEditFormData({ ...editFormData, salePrice: e.target.value })}
+                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-900 mb-2">
+                    Cost Price <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={editFormData.costPrice}
+                    onChange={(e) => setEditFormData({ ...editFormData, costPrice: e.target.value })}
+                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-900 mb-2">
+                    Manufacturer
+                  </label>
+                  <input
+                    type="text"
+                    value={editFormData.manufacturer}
+                    onChange={(e) => setEditFormData({ ...editFormData, manufacturer: e.target.value })}
+                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-slate-900 mb-2">
+                    Description
+                  </label>
+                  <textarea
+                    value={editFormData.description}
+                    onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
+                    rows={4}
+                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200">
+                <button
+                  type="button"
+                  onClick={() => setShowEditModal(false)}
+                  className="px-4 py-2 text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+                >
+                  Update Product
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Add Product Modal */}
       {showAddModal && (
