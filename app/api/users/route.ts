@@ -3,22 +3,53 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET(request: NextRequest) {
     try {
-        const users = await prisma.user.findMany({
-            select: {
-                id: true,
-                name: true,
-                email: true,
-                role: true,
-                status: true,
-                location: true,
-                phone: true,
-                profilePicture: true,
-                // Exclude password
-            },
-            orderBy: { name: 'asc' },
-        });
+        const url = new URL(request.url);
+        const email = url.searchParams.get('email');
+        
+        if (email) {
+            // Fetch single user by email
+            const user = await prisma.user.findUnique({
+                where: { email },
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    role: true,
+                    status: true,
+                    location: true,
+                    phone: true,
+                    profilePicture: true,
+                    // Exclude password
+                },
+            });
+            
+            if (!user) {
+                return NextResponse.json(
+                    { error: 'User not found' },
+                    { status: 404 }
+                );
+            }
+            
+            return NextResponse.json(user);
+        } else {
+            // Fetch all users
+            const users = await prisma.user.findMany({
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    role: true,
+                    status: true,
+                    location: true,
+                    phone: true,
+                    profilePicture: true,
+                    // Exclude password
+                },
+                orderBy: { name: 'asc' },
+            });
 
-        return NextResponse.json(users);
+            return NextResponse.json(users);
+        }
     } catch (error) {
         return NextResponse.json(
             { error: 'Failed to fetch users' },

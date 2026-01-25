@@ -26,8 +26,22 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Verify password using bcrypt
-        const isValidPassword = await comparePassword(password, user.password);
+        // Verify password - handle both plain text and hashed passwords
+        let isValidPassword = false;
+        
+        // First try direct comparison (for plain text passwords)
+        if (user.password === password) {
+            isValidPassword = true;
+        } else {
+            // If that fails, try bcrypt comparison (for hashed passwords)
+            try {
+                isValidPassword = await comparePassword(password, user.password);
+            } catch (error) {
+                // If bcrypt fails, password is definitely invalid
+                isValidPassword = false;
+            }
+        }
+        
         if (!isValidPassword) {
             return NextResponse.json(
                 { error: 'Invalid credentials' },

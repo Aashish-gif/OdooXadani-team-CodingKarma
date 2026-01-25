@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { withAuth } from '@/lib/jwtMiddleware';
-import { hashPassword } from '@/lib/auth';
+import { hashPassword, comparePassword } from '@/lib/auth';
 
 export async function PUT(request: NextRequest) {
   return withAuth(async (request, payload) => {
@@ -28,9 +28,37 @@ export async function PUT(request: NextRequest) {
         );
       }
 
-      // In a real app, you would verify the current password here
-      // For this implementation, we'll skip current password verification for demo purposes
-      // In production, you'd verify the current password before updating
+      // Verify the current password
+      if (!currentPassword) {
+        return NextResponse.json(
+          { error: 'Current password is required' },
+          { status: 400 }
+        );
+      }
+      
+      // Compare the provided current password with the stored password
+      // Handle both plain text and hashed passwords
+      let isValidCurrentPassword = false;
+      
+      // First try direct comparison (for plain text passwords)
+      if (user.password === currentPassword) {
+        isValidCurrentPassword = true;
+      } else {
+        // If that fails, try bcrypt comparison (for hashed passwords)
+      try {
+        isValidCurrentPassword = await comparePassword(currentPassword, user.password);
+      } catch (error) {
+        // If bcrypt fails, password is definitely invalid
+        isValidCurrentPassword = false;
+      }
+      }
+      
+      if (!isValidCurrentPassword) {
+        return NextResponse.json(
+          { error: 'Current password is incorrect' },
+          { status: 401 }
+        );
+      }
 
       // Hash the new password
       const hashedPassword = await hashPassword(newPassword);
