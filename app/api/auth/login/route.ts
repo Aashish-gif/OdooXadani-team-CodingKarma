@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { comparePassword, generateAccessToken, generateRefreshToken, createRefreshToken, JWTPayload } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
     try {
@@ -25,9 +26,9 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Verify password (In production, use bcrypt or similar)
-        // For this implementation, we'll do a simple string comparison or assume it's hashed
-        if (user.password !== password) {
+        // Verify password using bcrypt
+        const isValidPassword = await comparePassword(password, user.password);
+        if (!isValidPassword) {
             return NextResponse.json(
                 { error: 'Invalid credentials' },
                 { status: 401 }
@@ -41,10 +42,24 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Return user info (excluding password)
+        // Generate JWT tokens
+        const tokenPayload: JWTPayload = {
+            userId: user.id,
+            email: user.email,
+            role: user.role,
+        };
+        
+        const accessToken = generateAccessToken(tokenPayload);
+        const refreshToken = await createRefreshToken(user.id);
+
+        // Return user info with JWT tokens (excluding password)
         const { password: _, ...userWithoutPassword } = user;
 
-        return NextResponse.json(userWithoutPassword);
+        return NextResponse.json({
+            ...userWithoutPassword,
+            accessToken,
+            refreshToken,
+        });
     } catch (error) {
         console.error('Login error:', error);
         return NextResponse.json(

@@ -1,6 +1,7 @@
 import { Eye, Plus, X, Search, Filter } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useState, useEffect } from 'react';
+import { useCurrency } from '../contexts/CurrencyContext';
 
 type Page = any;
 type Role = 'Engineer' | 'Approver' | 'Operations' | 'Admin';
@@ -11,6 +12,7 @@ interface ProductsListProps {
 }
 
 export function ProductsList({ onNavigate, role }: ProductsListProps) {
+  const { formatPrice } = useCurrency();
   const [productsList, setProductsList] = useState<any[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -251,10 +253,10 @@ export function ProductsList({ onNavigate, role }: ProductsListProps) {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
-                      ${product.salePrice}
+                      {formatPrice(Number(product.salePrice))}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
-                      ${product.costPrice}
+                      {formatPrice(Number(product.costPrice))}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(product.status || 'Active')}`}>
@@ -357,7 +359,7 @@ export function ProductsList({ onNavigate, role }: ProductsListProps) {
 
                 <div>
                   <label className="block text-sm font-medium text-slate-900 mb-2">
-                    Sale Price (USD) <span className="text-red-500">*</span>
+                    Sale Price <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="number"
@@ -372,7 +374,7 @@ export function ProductsList({ onNavigate, role }: ProductsListProps) {
 
                 <div>
                   <label className="block text-sm font-medium text-slate-900 mb-2">
-                    Cost Price (USD) <span className="text-red-500">*</span>
+                    Cost Price <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="number"
