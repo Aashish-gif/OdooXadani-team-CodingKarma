@@ -329,7 +329,7 @@ export function VoiceAssistant({}: VoiceAssistantProps) {
           <CardHeader className="bg-muted/50 pb-3">
             <div className="flex items-center justify-between mb-2">
                 <Badge variant="secondary" className="text-[10px] px-1 py-0 h-5 bg-yellow-100 text-yellow-800 hover:bg-yellow-100 border-yellow-200">
-                    ⚠️ PROTOTYPE
+                    ⚠️ CONCEPT PROTOTYPE
                 </Badge>
                 <span className="text-[10px] text-muted-foreground">v0.1</span>
             </div>
@@ -352,7 +352,7 @@ export function VoiceAssistant({}: VoiceAssistantProps) {
                 </div>
                 <p className="text-muted-foreground">
                   Click the mic to start. <br/>
-                  Try saying "Approve ECO-1234"
+                  Try saying "Approve ECO123456"
                 </p>
                 <Button onClick={toggleListening} variant="default" className="w-full">
                   Start Listening
