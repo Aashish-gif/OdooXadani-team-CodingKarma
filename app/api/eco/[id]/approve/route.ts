@@ -19,7 +19,7 @@ export async function POST(
         stage: 'Implementation',
         approvals: {
           create: {
-            role: 'MCO Managnager',
+            role: 'ECO Manager',
             name: approverName,
             status: 'Approved',
             date: new Date(),

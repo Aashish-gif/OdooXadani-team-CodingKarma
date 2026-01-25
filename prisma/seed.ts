@@ -363,7 +363,7 @@ async function seedBoMOperations() {
 async function seedECOs() {
   const ecos = [
     {
-      ecoId: '2025-001',
+      ecoId: 'ECO100001',
       productId: 'P001',
       title: 'Armrest Strength Improvement',
       type: 'BoM',
@@ -373,7 +373,7 @@ async function seedECOs() {
       description: 'Increase armrest thickness by 2mm and change material to reinforced polymer',
     },
     {
-      ecoId: '2025-002',
+      ecoId: 'ECO100002',
       productId: 'P002',
       title: 'Seal Material Upgrade',
       type: 'BoM',
@@ -383,17 +383,17 @@ async function seedECOs() {
       description: 'Replace rubber seals with ceramic composite for better durability',
     },
     {
-      ecoId: '2025-003',
+      ecoId: 'ECO100003',
       productId: 'P003',
       title: 'HDR Support Addition',
       type: 'Product',
       stage: 'Completed',
-      status: 'Approved',
+      status: 'Completed',
       createdBy: 'sarah@example.com',
       description: 'Add HDR10+ and HDR400 support to the display',
     },
     {
-      ecoId: '2025-004',
+      ecoId: 'ECO100004',
       productId: 'P004',
       title: 'Pressure Rating Increase',
       type: 'Product',
@@ -403,7 +403,7 @@ async function seedECOs() {
       description: 'Increase working pressure from 200 to 210 bar',
     },
     {
-      ecoId: '2025-005',
+      ecoId: 'ECO100005',
       productId: 'P005',
       title: 'Macro Recording Feature',
       type: 'Product',
@@ -413,7 +413,7 @@ async function seedECOs() {
       description: 'Add macro recording and playback functionality',
     },
     {
-      ecoId: '2025-006',
+      ecoId: 'ECO100006',
       productId: 'P006',
       title: 'Stainless Steel Grade Change',
       type: 'BoM',
@@ -423,7 +423,7 @@ async function seedECOs() {
       description: 'Upgrade from 304 to 316L stainless steel for better corrosion resistance',
     },
     {
-      ecoId: '2025-007',
+      ecoId: 'ECO100007',
       productId: 'P007',
       title: 'Cooling System Enhancement',
       type: 'BoM',
@@ -460,31 +460,31 @@ async function seedECOs() {
 
 async function seedECOChanges() {
   const changes: Record<string, Array<{ component: string | null; field: string; oldValue: string; newValue: string; highlight: string }>> = {
-    '2025-001': [
+    'ECO100001': [
       { component: 'Armrest Pair', field: 'Material', oldValue: 'ABS', newValue: 'Reinforced Polymer', highlight: 'changed' },
       { component: 'Armrest Pair', field: 'Thickness', oldValue: '4mm', newValue: '6mm', highlight: 'increased' },
     ],
-    '2025-002': [
+    'ECO100002': [
       { component: 'Seal Assembly', field: 'Material', oldValue: 'Rubber', newValue: 'Ceramic Composite', highlight: 'changed' },
       { component: 'Seal Assembly', field: 'Cost', oldValue: '$50', newValue: '$75', highlight: 'increased' },
     ],
-    '2025-003': [
+    'ECO100003': [
       { component: null, field: 'HDR Support', oldValue: 'HDR10', newValue: 'HDR10+ / HDR400', highlight: 'increased' },
       { component: null, field: 'Brightness', oldValue: '300 nits', newValue: '400 nits', highlight: 'increased' },
     ],
-    '2025-004': [
+    'ECO100004': [
       { component: 'Piston Rod', field: 'Pressure Rating', oldValue: '200 bar', newValue: '210 bar', highlight: 'increased' },
       { component: 'Seal Kit', field: 'Material', oldValue: 'Standard', newValue: 'High-Pressure Grade', highlight: 'changed' },
     ],
-    '2025-005': [
+    'ECO100005': [
       { component: null, field: 'Features', oldValue: 'Standard Typing', newValue: 'Macro Recording', highlight: 'increased' },
       { component: null, field: 'Memory', oldValue: '1MB', newValue: '4MB', highlight: 'increased' },
     ],
-    '2025-006': [
+    'ECO100006': [
       { component: 'Stainless Steel Plate', field: 'Grade', oldValue: '304', newValue: '316L', highlight: 'changed' },
       { component: 'Stainless Angle', field: 'Grade', oldValue: '304', newValue: '316L', highlight: 'changed' },
     ],
-    '2025-007': [
+    'ECO100007': [
       { component: 'Cooling Fan', field: 'Design', oldValue: 'Radial', newValue: 'Axial Enhanced', highlight: 'changed' },
       { component: 'Cooling Fan', field: 'Airflow', oldValue: '120 CFM', newValue: '150 CFM', highlight: 'increased' },
     ],
@@ -510,33 +510,33 @@ async function seedECOChanges() {
 
 async function seedECOApprovals() {
   const ecoApprovals: Record<string, Array<{ role: string; name: string; status: string }>> = {
-    '2025-001': [
+    'ECO100001': [
       { role: 'Engineer', name: 'Sarah Engineer', status: 'Approved' },
       { role: 'ECO Manager', name: 'Michael Approver', status: 'Approved' },
     ],
-    '2025-002': [
+    'ECO100002': [
       { role: 'Engineer', name: 'Emma Engineer', status: 'Approved' },
       { role: 'ECO Manager', name: 'Lisa Approver', status: 'Approved' },
     ],
-    '2025-003': [
+    'ECO100003': [
       { role: 'Engineer', name: 'Sarah Engineer', status: 'Approved' },
       { role: 'ECO Manager', name: 'Michael Approver', status: 'Approved' },
       { role: 'Operations', name: 'John Operations', status: 'Approved' },
     ],
-    '2025-004': [
+    'ECO100004': [
       { role: 'Engineer', name: 'Emma Engineer', status: 'Approved' },
       { role: 'ECO Manager', name: 'Michael Approver', status: 'Pending' },
     ],
-    '2025-005': [
+    'ECO100005': [
       { role: 'Engineer', name: 'Sarah Engineer', status: 'Pending' },
       { role: 'ECO Manager', name: 'Lisa Approver', status: 'Pending' },
     ],
-    '2025-006': [
+    'ECO100006': [
       { role: 'Engineer', name: 'Emma Engineer', status: 'Approved' },
       { role: 'ECO Manager', name: 'Michael Approver', status: 'Pending' },
       { role: 'Operations', name: 'John Operations', status: 'Pending' },
     ],
-    '2025-007': [
+    'ECO100007': [
       { role: 'Engineer', name: 'Sarah Engineer', status: 'Approved' },
       { role: 'ECO Manager', name: 'Lisa Approver', status: 'Approved' },
       { role: 'Operations', name: 'John Operations', status: 'Approved' },
@@ -562,32 +562,32 @@ async function seedECOApprovals() {
 
 async function seedECOAuditLogs() {
   const auditLogs: Record<string, Array<{ user: string; action: string }>> = {
-    '2025-001': [
+    'ECO100001': [
       { user: 'sarah@example.com', action: 'Created ECO' },
       { user: 'michael@example.com', action: 'Approved ECO' },
       { user: 'john@example.com', action: 'Marked for Implementation' },
     ],
-    '2025-002': [
+    'ECO100002': [
       { user: 'emma@example.com', action: 'Created ECO' },
       { user: 'lisa@example.com', action: 'Approved ECO' },
     ],
-    '2025-003': [
+    'ECO100003': [
       { user: 'sarah@example.com', action: 'Created ECO' },
       { user: 'michael@example.com', action: 'Approved ECO' },
       { user: 'john@example.com', action: 'Marked as Completed' },
     ],
-    '2025-004': [
+    'ECO100004': [
       { user: 'emma@example.com', action: 'Created ECO' },
       { user: 'michael@example.com', action: 'Requested changes' },
     ],
-    '2025-005': [
+    'ECO100005': [
       { user: 'sarah@example.com', action: 'Created ECO - Draft' },
     ],
-    '2025-006': [
+    'ECO100006': [
       { user: 'emma@example.com', action: 'Created ECO' },
       { user: 'michael@example.com', action: 'Under Review' },
     ],
-    '2025-007': [
+    'ECO100007': [
       { user: 'sarah@example.com', action: 'Created ECO' },
       { user: 'lisa@example.com', action: 'Approved ECO' },
       { user: 'john@example.com', action: 'Marked for Implementation' },
@@ -611,17 +611,17 @@ async function seedUserActivities() {
   const activities: Array<{ email: string; action: string; type: string }> = [
     { email: 'admin@example.com', action: 'Viewed dashboard', type: 'View' },
     { email: 'sarah@example.com', action: 'Created product P001', type: 'Create' },
-    { email: 'michael@example.com', action: 'Approved ECO 2025-001', type: 'Approve' },
+    { email: 'michael@example.com', action: 'Approved ECO ECO100001', type: 'Approve' },
     { email: 'john@example.com', action: 'Viewed BoM BOM001', type: 'View' },
     { email: 'emma@example.com', action: 'Edited product P002', type: 'Edit' },
     { email: 'david@example.com', action: 'Viewed all products', type: 'View' },
-    { email: 'lisa@example.com', action: 'Approved ECO 2025-002', type: 'Approve' },
-    { email: 'sarah@example.com', action: 'Created ECO 2025-001', type: 'Create' },
-    { email: 'emma@example.com', action: 'Created ECO 2025-002', type: 'Create' },
-    { email: 'michael@example.com', action: 'Rejected ECO 2025-005', type: 'Approve' },
-    { email: 'john@example.com', action: 'Implemented ECO 2025-001', type: 'Edit' },
+    { email: 'lisa@example.com', action: 'Approved ECO ECO100002', type: 'Approve' },
+    { email: 'sarah@example.com', action: 'Created ECO ECO100001', type: 'Create' },
+    { email: 'emma@example.com', action: 'Created ECO ECO100002', type: 'Create' },
+    { email: 'michael@example.com', action: 'Rejected ECO ECO100005', type: 'Approve' },
+    { email: 'john@example.com', action: 'Implemented ECO ECO100001', type: 'Edit' },
     { email: 'admin@example.com', action: 'Generated reports', type: 'View' },
-    { email: 'lisa@example.com', action: 'Approved ECO 2025-007', type: 'Approve' },
+    { email: 'lisa@example.com', action: 'Approved ECO ECO100007', type: 'Approve' },
     { email: 'sarah@example.com', action: 'Viewed product versions', type: 'View' },
   ]
 
@@ -639,15 +639,15 @@ async function seedUserActivities() {
 async function seedNotifications() {
   const notifications: Array<{ email: string; type: string; message: string }> = [
     { email: 'admin@example.com', type: 'System', message: 'Database backup completed successfully' },
-    { email: 'michael@example.com', type: 'ECO Approval', message: 'New ECO 2025-004 awaits your approval' },
-    { email: 'sarah@example.com', type: 'ECO Update', message: 'ECO 2025-001 approved and moved to implementation' },
-    { email: 'john@example.com', type: 'Task', message: 'Implement ECO 2025-007 on Line A' },
+    { email: 'michael@example.com', type: 'ECO Approval', message: 'New ECO ECO100004 awaits your approval' },
+    { email: 'sarah@example.com', type: 'ECO Update', message: 'ECO ECO100001 approved and moved to implementation' },
+    { email: 'john@example.com', type: 'Task', message: 'Implement ECO ECO100007 on Line A' },
     { email: 'emma@example.com', type: 'Product Update', message: 'Product P005 version v1.3 released' },
-    { email: 'lisa@example.com', type: 'ECO Approval', message: 'ECO 2025-006 requires your review' },
+    { email: 'lisa@example.com', type: 'ECO Approval', message: 'ECO ECO100006 requires your review' },
     { email: 'admin@example.com', type: 'Alert', message: 'User account david@example.com created' },
     { email: 'sarah@example.com', type: 'Status', message: 'Your ECO submissions: 3 approved, 1 pending' },
     { email: 'michael@example.com', type: 'Status', message: 'Approvals pending: 2 ECOs require review' },
-    { email: 'john@example.com', type: 'Implementation', message: 'ECO 2025-003 marked as completed' },
+    { email: 'john@example.com', type: 'Implementation', message: 'ECO ECO100003 marked as completed' },
   ]
 
   for (const notif of notifications) {
@@ -666,8 +666,8 @@ async function seedSystemSettings() {
     { key: 'companyName', value: 'CodingKarma Inc.' },
     { key: 'currency', value: 'USD' },
     { key: 'timeZone', value: 'UTC' },
-    { key: 'maxApprovalLevels', value: '3' },
-    { key: 'ecoPrefix', value: 'ECO-' },
+    { key: 'maxApprovalLevels', value: '1' },
+    { key: 'ecoPrefix', value: 'ECO' },
   ]
   for (const s of settings) {
     const exists = await prisma.systemSetting.findUnique({ where: { key: s.key } })
