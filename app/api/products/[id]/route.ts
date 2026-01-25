@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { NextRequest, NextResponse } from 'next/server'
+import { prisma } from '@/lib/prisma'
+import { notifyAllActiveUsers } from '@/lib/notifications'
 
 export async function GET(
     request: NextRequest,
@@ -64,20 +65,53 @@ export async function PUT(
     request: NextRequest,
     context: { params: Promise<{ id: string }> }
 ) {
-    const params = await context.params;
+    const params = await context.params
     try {
-        const body = await request.json();
+        const body = await request.json()
+
+        const existing = await prisma.product.findUnique({
+            where: { productId: params.id },
+            select: { id: true, productId: true, name: true, currentVersion: true },
+        })
+
+        if (!existing) {
+            return NextResponse.json(
+                { error: 'Product not found' },
+                { status: 404 },
+            )
+        }
+
         const product = await prisma.product.update({
             where: { productId: params.id },
             data: body,
-        });
+        })
 
-        return NextResponse.json(product);
+        const versionChanged = body.currentVersion && body.currentVersion !== existing.currentVersion
+
+        if (versionChanged) {
+            await prisma.productVersion.create({
+                data: {
+                    productId: existing.id,
+                    version: body.currentVersion,
+                    changes: body.versionChanges || body.description || 'Version updated',
+                },
+            })
+
+            await notifyAllActiveUsers({
+                type: 'product.version',
+                message: `Product ${existing.productId} updated to ${body.currentVersion}`,
+                entityType: 'product',
+                entityId: existing.productId,
+                link: `/products/${existing.productId}`,
+            })
+        }
+
+        return NextResponse.json(product)
     } catch (error) {
         return NextResponse.json(
             { error: 'Failed to update product' },
-            { status: 500 }
-        );
+            { status: 500 },
+        )
     }
 }
 

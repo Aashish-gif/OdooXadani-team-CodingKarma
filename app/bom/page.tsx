@@ -9,6 +9,9 @@ export default function BoMPage() {
 
   const handleNavigate = (page: any) => {
     switch (page.name) {
+      case 'bom-create':
+        router.push(page.productId ? `/bom/create?productId=${page.productId}` : '/bom/create');
+        break;
       case 'bom-detail':
         router.push(`/bom/${page.id}`);
         break;

@@ -1,4 +1,4 @@
-import { Eye, Search, Filter } from 'lucide-react';
+import { Eye, Search, Filter, Plus } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 type Page = any;
@@ -40,19 +40,28 @@ export function BoMList({ onNavigate }: BoMListProps) {
       : 'bg-slate-100 text-slate-600';
   };
 
-
-
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-xl border border-slate-200">
-        <div className="px-6 py-4 border-b border-slate-200">
-          <h3 className="text-lg font-semibold text-slate-900">Bills of Materials</h3>
-          <p className="text-sm text-slate-600 mt-1">
-            Component and operation definitions for products - Showing {bomsList.length} BoMs
-          </p>
+        <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-semibold text-slate-900">Bills of Materials</h3>
+            <p className="text-sm text-slate-600 mt-1">
+              Component and operation definitions for products - Showing {bomsList.length} BoMs
+            </p>
+          </div>
+          <button
+            onClick={() => onNavigate({ name: 'bom-create' })}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Create BoM
+          </button>
+        </div>
 
-          {/* Search and Filters */}
-          <div className="mt-4 flex flex-col md:flex-row gap-3">
+        {/* Search and Filters */}
+        <div className="px-6 py-4 border-b border-slate-200">
+          <div className="flex flex-col md:flex-row gap-3">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input

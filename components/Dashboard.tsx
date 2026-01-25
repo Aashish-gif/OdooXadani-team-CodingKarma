@@ -1,4 +1,4 @@
-import { Package, Layers, FileEdit, CheckCircle, Clock, TrendingUp, TrendingDown, Plus } from 'lucide-react';
+import { Package, Layers, FileEdit, Clock, Plus } from 'lucide-react'
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 type Page = any;
@@ -8,51 +8,8 @@ interface DashboardProps {
   role?: 'Engineer' | 'Approver' | 'Operations' | 'Admin';
 }
 
-const recentECOs = [
-  {
-    id: '2024-001',
-    title: 'Update Motor Housing Material',
-    type: 'BoM',
-    product: 'Industrial Pump XR-500',
-    status: 'Approval',
-    lastUpdated: '2024-01-23',
-  },
-  {
-    id: '2024-002',
-    title: 'Price Adjustment - Q1 2024',
-    type: 'Product',
-    product: 'Office Chair Deluxe',
-    status: 'Done',
-    lastUpdated: '2024-01-22',
-  },
-  {
-    id: '2024-003',
-    title: 'Component Substitution - Chip Supplier Change',
-    type: 'BoM',
-    product: 'Smartphone Pro 12',
-    status: 'New',
-    lastUpdated: '2024-01-21',
-  },
-  {
-    id: '2024-004',
-    title: 'Add Mounting Bracket to Assembly',
-    type: 'BoM',
-    product: 'Automotive Dashboard Panel',
-    status: 'Approval',
-    lastUpdated: '2024-01-20',
-  },
-  {
-    id: '2024-005',
-    title: 'Cost Reduction Initiative - Cable Assembly',
-    type: 'Product',
-    product: 'USB-C Cable 2m',
-    status: 'Done',
-    lastUpdated: '2024-01-19',
-  },
-];
-
 // Analytics Data
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react'
 
 export function Dashboard({ onNavigate, role }: DashboardProps) {
   const [statsData, setStatsData] = useState<any>(null);
@@ -94,8 +51,6 @@ export function Dashboard({ onNavigate, role }: DashboardProps) {
       label: 'Total Products',
       value: statsData?.products?.toString() || '0',
       icon: Package,
-      trend: '+12',
-      trendUp: true,
       bgColor: 'bg-blue-50',
       iconColor: 'text-blue-600',
     },
@@ -103,8 +58,6 @@ export function Dashboard({ onNavigate, role }: DashboardProps) {
       label: 'Active BoMs',
       value: statsData?.activeBoMs?.toString() || '0',
       icon: Layers,
-      trend: '+5',
-      trendUp: true,
       bgColor: 'bg-emerald-50',
       iconColor: 'text-emerald-600',
     },
@@ -112,8 +65,6 @@ export function Dashboard({ onNavigate, role }: DashboardProps) {
       label: 'Open ECOs',
       value: statsData?.openECOs?.toString() || '0',
       icon: FileEdit,
-      trend: '-3',
-      trendUp: false,
       bgColor: 'bg-amber-50',
       iconColor: 'text-amber-600',
     },
@@ -121,12 +72,10 @@ export function Dashboard({ onNavigate, role }: DashboardProps) {
       label: 'Pending Approvals',
       value: statsData?.pendingApprovals?.toString() || '0',
       icon: Clock,
-      trend: '+2',
-      trendUp: true,
       bgColor: 'bg-purple-50',
       iconColor: 'text-purple-600',
     },
-  ];
+  ]
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -195,27 +144,20 @@ export function Dashboard({ onNavigate, role }: DashboardProps) {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat) => {
-          const Icon = stat.icon;
-          const TrendIcon = stat.trendUp ? TrendingUp : TrendingDown;
+          const Icon = stat.icon
           return (
             <div key={stat.label} className="bg-white rounded-xl border border-slate-200 p-6">
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-sm text-slate-600 mb-1">{stat.label}</p>
                   <p className="text-3xl font-semibold text-slate-900">{stat.value}</p>
-                  <div className="flex items-center gap-1 mt-2">
-                    <TrendIcon className={`w-4 h-4 ${stat.trendUp ? 'text-emerald-600' : 'text-red-600'}`} />
-                    <span className={`text-sm ${stat.trendUp ? 'text-emerald-600' : 'text-red-600'}`}>
-                      {stat.trend} this month
-                    </span>
-                  </div>
                 </div>
                 <div className={`w-12 h-12 rounded-lg ${stat.bgColor} flex items-center justify-center`}>
                   <Icon className={`w-6 h-6 ${stat.iconColor}`} />
                 </div>
               </div>
             </div>
-          );
+          )
         })}
       </div>
 
@@ -344,7 +286,7 @@ export function Dashboard({ onNavigate, role }: DashboardProps) {
                   className="hover:bg-slate-50 cursor-pointer transition-colors"
                 >
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm font-medium text-slate-900">{eco.ecoNumber}</span>
+                    <span className="text-sm font-medium text-slate-900">{eco.id}</span>
                   </td>
                   <td className="px-6 py-4">
                     <span className="text-sm text-slate-900">{eco.title}</span>
@@ -353,7 +295,7 @@ export function Dashboard({ onNavigate, role }: DashboardProps) {
                     <span className="text-sm text-slate-600">{eco.type}</span>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="text-sm text-slate-600">{eco.product?.name || 'N/A'}</span>
+                    <span className="text-sm text-slate-600">{eco.product || 'N/A'}</span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(eco.status)}`}>
@@ -361,7 +303,7 @@ export function Dashboard({ onNavigate, role }: DashboardProps) {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
-                    {new Date(eco.updatedAt).toLocaleDateString()}
+                    {eco.effectiveDate ? new Date(eco.effectiveDate).toLocaleDateString() : '—'}
                   </td>
                 </tr>
               ))}
