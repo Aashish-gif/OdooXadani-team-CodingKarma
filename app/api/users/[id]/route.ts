@@ -3,11 +3,12 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params;
         const user = await prisma.user.findUnique({
-            where: { id: params.id },
+            where: { id },
             include: {
                 activities: {
                     orderBy: { date: 'desc' },
@@ -32,9 +33,10 @@ export async function GET(
 
 export async function PUT(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params;
         const body = await request.json();
 
         if (body.password) {
@@ -42,7 +44,7 @@ export async function PUT(
         }
 
         const user = await prisma.user.update({
-            where: { id: params.id },
+            where: { id },
             data: {
                 name: body.name,
                 email: body.email,
@@ -67,11 +69,12 @@ export async function PUT(
 
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params;
         await prisma.user.delete({
-            where: { id: params.id }
+            where: { id }
         });
         return NextResponse.json({ message: 'User deleted' });
     } catch (error) {
